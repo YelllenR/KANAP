@@ -1,4 +1,4 @@
-// Declaring a class to materialize a specific Product
+
 class Product {
     constructor(colors, _id, name, price, imageUrl, description, altTxt) {
         this.colors = colors;
@@ -11,14 +11,17 @@ class Product {
     }
 }
 
+
+
+
 // Fetch data from API, return JSON
 function FetchAndRenderProductsApi(getProductsUrl) {
     fetch(getProductsUrl)
         .then(response => response.json())
         .then(products => TypeProductList(products))
-        .then(apiResultList => RenderProducts(apiResultList)) // fonction lambda
-        .then(() => SetLocalStorage(apiResultList)) //function to set localstorage
-        
+        .then(productList => RenderProducts(productList)) // fonction lambda
+
+
 }
 // Main
 FetchAndRenderProductsApi('http://localhost:3000/api/products');
@@ -57,23 +60,8 @@ function RenderProducts(productList) {
 function SetLocalStorage(productList) {
     let productListWithoutPrice = NullifyPrice(productList);
     localStorage.setItem("productList", JSON.stringify(productListWithoutPrice));
-    
+
 }
 
 
-// Set price to null value
-function NullifyPrice(productList) {
-    productList.forEach(element => {
-        element.price = undefined;
-    });
-    return productList;
-}
-
-// Getting local storage without price
-function GetLocalStorage() {
-    return localStorage.getItem("productList");
-}
-
-
-
-
+module.export = {Product};
