@@ -1,5 +1,17 @@
-class Product { 
-    import = ("./script");
+// class Product {
+//     import = ("./script");
+// }
+
+class Product {
+    constructor(colors, _id, name, price, imageUrl, description, altTxt) {
+        this.colors = colors;
+        this._id = _id;
+        this.name = name;
+        this.price = price;
+        this.imageUrl = imageUrl;
+        this.description = description;
+        this.altTxt = altTxt;
+    }
 }
 
 function FetchAndRenderProductsApi(getProductsUrl) {
@@ -23,14 +35,34 @@ function TypeProductList(products) {
     console.log(typeProductList);
 }
 
+
+
+
+let priceOfProduct = document.getElementById("title");
+let titleOfProduct = document.getElementById("price");
+let descriptionOfProduct = document.getElementById("description");
+let infos = " ";
+let image = getQ
+
 // Getting id from url using urlSearchParam and for loop and rendering the image
 function SearchIdInUrl(productID) {
     let keySearchValues = window.location.search.replace("?", "");
-    for (let i = 0; i < typeProductList.length; i++) {
+   
+
+    for (let i = 0; i < typeProductList.length; i++) {  
         if (typeProductList[i]._id === keySearchValues) {
-            console.log("Trouvé avec l'ID " + typeProductList[i]._id + " en place " + [i])
+            console.log("Trouvé avec l'ID " + typeProductList[i]._id + " en place " + [i]);
+         
+            infos += `<img src="${typeProductList[i].imageUrl}" alt="${typeProductList[i].altTxt}">`
+            
         }
+
     }
-    
-    return typeProductList; 
+
+   
+
 }
+// Rendering products informations based on the product clicked on
+
+
+

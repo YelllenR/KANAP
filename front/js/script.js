@@ -64,4 +64,4 @@ function SetLocalStorage(productList) {
 }
 
 
-module.export = {Product};
+// module.export = {Product};
