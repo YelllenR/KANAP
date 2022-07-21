@@ -36,33 +36,39 @@ function TypeProductList(products) {
 }
 
 
-
-
-let priceOfProduct = document.getElementById("title");
-let titleOfProduct = document.getElementById("price");
-let descriptionOfProduct = document.getElementById("description");
-let infos = " ";
-let image = getQ
+const imageOfProduct = document.getElementsByClassName("item__img"); 
+console.log(imageOfProduct);
+const titleOfProduct = document.getElementById("title");
+const priceOfProduct = document.getElementById("price");
+const descriptionOfProduct = document.getElementById("description");
+let imageDisplay = " ";
+let priceDisplay = " ";
+let description = " ";
 
 // Getting id from url using urlSearchParam and for loop and rendering the image
 function SearchIdInUrl(productID) {
     let keySearchValues = window.location.search.replace("?", "");
-   
 
-    for (let i = 0; i < typeProductList.length; i++) {  
+    for (let i = 0; i < typeProductList.length; i++) {
         if (typeProductList[i]._id === keySearchValues) {
-            console.log("Trouvé avec l'ID " + typeProductList[i]._id + " en place " + [i]);
-         
-            infos += `<img src="${typeProductList[i].imageUrl}" alt="${typeProductList[i].altTxt}">`
-            
-        }
 
+            console.log("Trouvé avec l'ID " + typeProductList[i]._id + " en place " + [i]);
+            
+            imageDisplay += `<img src="${typeProductList[i].imageUrl}" alt="${typeProductList[i].altTxt}">`;
+            priceDisplay += typeProductList[i].price;
+            description += typeProductList[i].description;
+        }
+        imageOfProduct.innerHTML = imageDisplay;
+        priceOfProduct.innerHTML = priceDisplay;
+        descriptionOfProduct.innerHTML = description;
     }
 
-   
-
 }
-// Rendering products informations based on the product clicked on
+
+
+
+
+
 
 
 

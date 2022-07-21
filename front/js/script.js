@@ -12,8 +12,6 @@ class Product {
 }
 
 
-
-
 // Fetch data from API, return JSON
 function FetchAndRenderProductsApi(getProductsUrl) {
     fetch(getProductsUrl)
