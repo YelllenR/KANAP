@@ -14,74 +14,94 @@ class Product {
     }
 }
 
+// getting the id of the product with window lcoation search
+const keySearchValues = window.location.search.replace("?", "");
+
+// Fetch - Calling the API adresse with the id route (also using the file Product.js in the models file)
+FetchAndRenderProductsApi('http://localhost:3000/api/products/' + keySearchValues);
+
+// fetch, get response in json, convert it into an object, rendering the informations in html and checking the values before redirection
 function FetchAndRenderProductsApi(getProductsUrl) {
     fetch(getProductsUrl)
         .then(response => response.json())
-        .then((products) => TypeProductList(products))
-        .then((productID) => SearchIdInUrl(productID))
+        .then((product) => TypeProduct(product))
+        .then((product) => SetHtmlElements(product))
+        .then((valuesInChoice) => ClickCartButton(valuesInChoice))
 }
 
-// Main-Fetch - Calling the function with the acces route
-FetchAndRenderProductsApi('http://localhost:3000/api/products');
-
-let typeProductList = [];
-
-function TypeProductList(products) {
-    products.forEach(element => {
-        let result = Object.assign(new Product, element);
-        typeProductList.push(result);
-    });
-
-    console.log(typeProductList);
+// assigning product as a new product object
+function TypeProduct(product) {
+    return Object.assign(new Product, product);
 }
 
+
+// const to access on a global scope
 const titleOfProduct = document.getElementById("title");
 const priceOfProduct = document.getElementById("price");
 const descriptionOfProduct = document.getElementById("description");
-const imageOfProduct = document.querySelector(".item__img"); 
+const imageOfProduct = document.querySelector(".item__img");
 const colorsSelection = document.getElementById("colors");
-let priceDisplay = " ";
-let description = " ";
-let nameProduct = " ";
-let imageDisplay = " ";
-let keySearchValues = window.location.search.replace("?", "");
 
 
-// Getting id from url using urlSearchParam and for loop and rendering the image
-function SearchIdInUrl(productID) {
-    for (let i = 0; i < typeProductList.length; i++) {
-
-        if (typeProductList[i]._id === keySearchValues) {
-
-            // setting the informations according to the urlID
-            imageDisplay += `<img src="${typeProductList[i].imageUrl}" 
-                                alt="${typeProductList[i].altTxt}">`;
-
-            priceDisplay += typeProductList[i].price;
-            description += typeProductList[i].description;
-            nameProduct += typeProductList[i].name;
+// Setting the informations according to the urlID
+function SetHtmlElements(product) {
+    imageOfProduct.innerHTML += `<img src="${product.imageUrl}" 
+                                alt="${product.altTxt}">`;
+    priceOfProduct.innerHTML += product.price;
+    descriptionOfProduct.innerHTML += product.description;
+    titleOfProduct.innerHTML += product.name;
 
 
-            // Setting the dropdown menu for choosing the colors from list related to the product.
-            let colorsList = typeProductList[i].colors;
-            colorsList.forEach((color) => {
-                let optionColor = document.createElement("option");
-                optionColor.value = color;
-                optionColor.text = color;
-                colorsSelection.appendChild(optionColor);
-            });
+    // Setting the dropdown menu for choosing the colors from list related to the product.
+    let colorsList = product.colors;
+    colorsList.forEach((color) => {
+        let optionColor = document.createElement("option");
+        optionColor.value = color;
+        optionColor.text = color;
+        colorsSelection.appendChild(optionColor);
 
-            break;
-        }
-    }
+    });
 
-    imageOfProduct.innerHTML = imageDisplay;
-    titleOfProduct.innerHTML = nameProduct;
-    priceOfProduct.innerHTML = priceDisplay;
-    descriptionOfProduct.innerHTML = description;
+    AddOnClickToCartButton();
+}
+
+
+function AddOnClickToCartButton(valuesInChoice){
+    CheckingValues(valuesInChoice);
+    
+    const addingToCart = document.getElementById("addToCart"); 
+    let renderMessage = "";
 
 }
 
 
+function OnClickCardButton(){
+    CheckingValues();
+    SaveProductToLocalStorage();
+    NotifyProductAddToBasket();
+}
 
 
+function CheckingValues(valuesInChoice) {
+    const inputQuantities = document.getElementsByName("input");
+
+    inputQuantities.forEach((valueInput) => {
+        valueInput.addEventlistener("input", function (){
+            if (valueInput <= 0 && valueInput >= 101) {
+                console.error("error");
+            }
+      
+        })
+    })
+
+    return valuesInChoice;
+}
+
+
+function SaveProductToLocalStorage(){
+
+}
+
+function NotifyProductAddToBasket(){
+
+}
