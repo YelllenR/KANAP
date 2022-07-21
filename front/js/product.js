@@ -35,39 +35,52 @@ function TypeProductList(products) {
     console.log(typeProductList);
 }
 
-
-const imageOfProduct = document.getElementsByClassName("item__img"); 
-console.log(imageOfProduct);
 const titleOfProduct = document.getElementById("title");
 const priceOfProduct = document.getElementById("price");
 const descriptionOfProduct = document.getElementById("description");
-let imageDisplay = " ";
+const imageOfProduct = document.querySelector(".item__img"); 
+const colorsSelection = document.getElementById("colors");
 let priceDisplay = " ";
 let description = " ";
+let nameProduct = " ";
+let imageDisplay = " ";
+let keySearchValues = window.location.search.replace("?", "");
+
 
 // Getting id from url using urlSearchParam and for loop and rendering the image
 function SearchIdInUrl(productID) {
-    let keySearchValues = window.location.search.replace("?", "");
-
     for (let i = 0; i < typeProductList.length; i++) {
+
         if (typeProductList[i]._id === keySearchValues) {
 
-            console.log("Trouvé avec l'ID " + typeProductList[i]._id + " en place " + [i]);
-            
-            imageDisplay += `<img src="${typeProductList[i].imageUrl}" alt="${typeProductList[i].altTxt}">`;
+            // setting the informations according to the urlID
+            imageDisplay += `<img src="${typeProductList[i].imageUrl}" 
+                                alt="${typeProductList[i].altTxt}">`;
+
             priceDisplay += typeProductList[i].price;
             description += typeProductList[i].description;
+            nameProduct += typeProductList[i].name;
+
+
+            // Setting the dropdown menu for choosing the colors from list related to the product.
+            let colorsList = typeProductList[i].colors;
+            colorsList.forEach((color) => {
+                let optionColor = document.createElement("option");
+                optionColor.value = color;
+                optionColor.text = color;
+                colorsSelection.appendChild(optionColor);
+            });
+
+            break;
         }
-        imageOfProduct.innerHTML = imageDisplay;
-        priceOfProduct.innerHTML = priceDisplay;
-        descriptionOfProduct.innerHTML = description;
     }
 
+    imageOfProduct.innerHTML = imageDisplay;
+    titleOfProduct.innerHTML = nameProduct;
+    priceOfProduct.innerHTML = priceDisplay;
+    descriptionOfProduct.innerHTML = description;
+
 }
-
-
-
-
 
 
 
