@@ -18,11 +18,11 @@ function FetchAndRenderProductsApi(getProductsUrl) {
         .then(response => response.json())
         .then(products => TypeProductList(products))
         .then(productList => RenderProducts(productList)) // fonction lambda
-
-
 }
-// Main
+
 FetchAndRenderProductsApi('http://localhost:3000/api/products');
+
+
 // Getting List of product
 function TypeProductList(products) {
     console.log(products);
@@ -33,6 +33,7 @@ function TypeProductList(products) {
     });
     return typeProductList;
 }
+
 
 
 // Rendering elements in html with key
@@ -58,8 +59,6 @@ function RenderProducts(productList) {
 function SetLocalStorage(productList) {
     let productListWithoutPrice = NullifyPrice(productList);
     localStorage.setItem("productList", JSON.stringify(productListWithoutPrice));
-
 }
 
 
-// module.export = {Product};

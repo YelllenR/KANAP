@@ -26,7 +26,7 @@ function FetchAndRenderProductsApi(getProductsUrl) {
         .then(response => response.json())
         .then((product) => TypeProduct(product))
         .then((product) => SetHtmlElements(product))
-        .then((valuesInChoice) => ClickCartButton(valuesInChoice))
+        .then(() => AddEventListenerToCartButton())
 }
 
 // assigning product as a new product object
@@ -51,7 +51,6 @@ function SetHtmlElements(product) {
     descriptionOfProduct.innerHTML += product.description;
     titleOfProduct.innerHTML += product.name;
 
-
     // Setting the dropdown menu for choosing the colors from list related to the product.
     let colorsList = product.colors;
     colorsList.forEach((color) => {
@@ -59,49 +58,98 @@ function SetHtmlElements(product) {
         optionColor.value = color;
         optionColor.text = color;
         colorsSelection.appendChild(optionColor);
-
     });
 
-    AddOnClickToCartButton();
-}
-
-
-function AddOnClickToCartButton(valuesInChoice){
-    CheckingValues(valuesInChoice);
-    
-    const addingToCart = document.getElementById("addToCart"); 
-    let renderMessage = "";
 
 }
 
 
-function OnClickCardButton(){
-    CheckingValues();
-    SaveProductToLocalStorage();
-    NotifyProductAddToBasket();
+function AddEventListenerToCartButton() {
+    const addingToCart = document.getElementById("addToCart");
+    addingToCart.addEventListener("click", function (event) {
+        event.preventDefault();
+        OnClickCardButton();
+    });
 }
 
 
-function CheckingValues(valuesInChoice) {
-    const inputQuantities = document.getElementsByName("input");
-
-    inputQuantities.forEach((valueInput) => {
-        valueInput.addEventlistener("input", function (){
-            if (valueInput <= 0 && valueInput >= 101) {
-                console.error("error");
-            }
-      
-        })
-    })
-
-    return valuesInChoice;
+function OnClickCardButton() {
+    if (CheckingValues()) {
+        SaveProductToLocalStorage();
+        NotifyProductAddToBasket();
+    }
 }
 
 
-function SaveProductToLocalStorage(){
-
+// Checking colors and quantity
+function CheckingValues() {
+    if (CheckQuantities()) {
+        if (CheckColors()) {
+            return true;
+        }
+    }
+    CheckColors()
+    CheckQuantities()
+    return false;
 }
 
-function NotifyProductAddToBasket(){
+// Checking input values in quantities
+function CheckQuantities() {
+    const inputQuantities = document.getElementById("quantity").value;
+
+    if (inputQuantities == 0) {
+        alert("Veuillez indiquer une quantité.");
+        return false;
+    }
+
+    if (inputQuantities < 0) {
+        alert("Veuillez indiquer une quantité supérieure à 0.");
+        return false;
+    }
+
+    if (inputQuantities > 100) {
+        alert("Veuillez indiquer une quantité inférieure à 100.");
+        return false;
+    }
+    console.log(inputQuantities)
+    return inputQuantities;
+}
+
+
+// Checking selected color
+function CheckColors() {
+    const selectColor = document.getElementById("colors").value;
+    if (selectColor.value === selectColor[0]) {
+        alert("Veuillez choisir une couleur");
+        return false;
+    }
+    console.log(selectColor)
+    return selectColor;
+}
+
+
+
+function SaveProductToLocalStorage() {
+    SetProductToLocalStorage();
+    GetProductToLocalStorage();
+}
+
+
+function SetProductToLocalStorage() {
+    const storedList = [];
+    localStorage.setItem("id", keySearchValues), 
+    ("quantity", CheckQuantities()), 
+    ("color", CheckColors());
+}
+
+
+function GetProductToLocalStorage() {
+let storedList = [];
+ localStorage.getItem("id", "quantity", "color", JSON.stringify());
+//  localStorage.getItem(, JSON.stringify());
+//  localStorage.getItem(, JSON.stringify());
+}
+
+function NotifyProductAddToBasket() {
 
 }
