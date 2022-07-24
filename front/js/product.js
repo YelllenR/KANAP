@@ -1,7 +1,7 @@
+// 
 // class Product {
 //     import = ("./script");
 // }
-
 class Product {
     constructor(colors, _id, name, price, imageUrl, description, altTxt) {
         this.colors = colors;
@@ -14,11 +14,28 @@ class Product {
     }
 }
 
+// Object for product in cart
+class ProducInCart {
+    constructor(id, color, quantity) {
+        this.id = id;
+        this.color = color;
+        this.quantity = quantity
+    }
+}
+
+// const to access on a global scope
+const titleOfProduct = document.getElementById("title");
+const priceOfProduct = document.getElementById("price");
+const descriptionOfProduct = document.getElementById("description");
+const imageOfProduct = document.querySelector(".item__img");
+const colorsSelection = document.getElementById("colors");
+
 // getting the id of the product with window lcoation search
 const keySearchValues = window.location.search.replace("?", "");
 
 // Fetch - Calling the API adresse with the id route (also using the file Product.js in the models file)
 FetchAndRenderProductsApi('http://localhost:3000/api/products/' + keySearchValues);
+
 
 // fetch, get response in json, convert it into an object, rendering the informations in html and checking the values before redirection
 function FetchAndRenderProductsApi(getProductsUrl) {
@@ -35,15 +52,7 @@ function TypeProduct(product) {
 }
 
 
-// const to access on a global scope
-const titleOfProduct = document.getElementById("title");
-const priceOfProduct = document.getElementById("price");
-const descriptionOfProduct = document.getElementById("description");
-const imageOfProduct = document.querySelector(".item__img");
-const colorsSelection = document.getElementById("colors");
-
-
-// Setting the informations according to the urlID
+// Setting the informations according to the ID of the product selected
 function SetHtmlElements(product) {
     imageOfProduct.innerHTML += `<img src="${product.imageUrl}" 
                                 alt="${product.altTxt}">`;
@@ -59,11 +68,9 @@ function SetHtmlElements(product) {
         optionColor.text = color;
         colorsSelection.appendChild(optionColor);
     });
-
-
 }
 
-
+// Event Listener on addToCart button that calls the OnClickCardButton.
 function AddEventListenerToCartButton() {
     const addingToCart = document.getElementById("addToCart");
     addingToCart.addEventListener("click", function (event) {
@@ -72,25 +79,24 @@ function AddEventListenerToCartButton() {
     });
 }
 
+// --------------- Below - functions that are called only if button is clicked -----------------------------------
 
+// function that checks if values are Ok and then save them to localstorage. 
 function OnClickCardButton() {
     if (CheckingValues()) {
         SaveProductToLocalStorage();
-        NotifyProductAddToBasket();
     }
 }
 
-
 // Checking colors and quantity
 function CheckingValues() {
-    if (CheckQuantities()) {
-        if (CheckColors()) {
-            return true;
-        }
+    if (CheckQuantities() == false) {
+        return false;
     }
-    CheckColors()
-    CheckQuantities()
-    return false;
+    if (CheckColors() == false) {
+        return false;
+    }
+    return true;
 }
 
 // Checking input values in quantities
@@ -111,8 +117,7 @@ function CheckQuantities() {
         alert("Veuillez indiquer une quantité inférieure à 100.");
         return false;
     }
-    console.log(inputQuantities)
-    return inputQuantities;
+    return true;
 }
 
 
@@ -123,33 +128,37 @@ function CheckColors() {
         alert("Veuillez choisir une couleur");
         return false;
     }
-    console.log(selectColor)
-    return selectColor;
+    return true;
 }
 
-
-
+//  Get localstorage, checking if localstorage has data and if not setting them in a list.  
 function SaveProductToLocalStorage() {
-    SetProductToLocalStorage();
-    GetProductToLocalStorage();
+
+    // Get local storage, store the data to a new variable. 
+    let oldLocalStorage = GetProductToLocalStorage();
+
+    const inputQuantities = document.getElementById("quantity").value;
+    const selectColor = document.getElementById("colors").value;
+
+    // Create new object (from model ProducInCart) that holds the values selected
+    let productCart = new ProducInCart(keySearchValues, selectColor, inputQuantities);
+
+    let newListProductInBasket = [];
+
+    if (oldLocalStorage != null) {
+        newListProductInBasket = oldLocalStorage;
+    }
+    
+    // Save and replace old local storage with new list.
+    newListProductInBasket.push(productCart);
+    
+    localStorage.setItem("ListSelectedProduct", JSON.stringify(newListProductInBasket));
 }
 
 
-function SetProductToLocalStorage() {
-    const storedList = [];
-    localStorage.setItem("id", keySearchValues), 
-    ("quantity", CheckQuantities()), 
-    ("color", CheckColors());
-}
-
-
+// Get local storage for product selected in page.
 function GetProductToLocalStorage() {
-let storedList = [];
- localStorage.getItem("id", "quantity", "color", JSON.stringify());
-//  localStorage.getItem(, JSON.stringify());
-//  localStorage.getItem(, JSON.stringify());
-}
-
-function NotifyProductAddToBasket() {
-
+    let storage = localStorage.getItem("ListSelectedProduct");
+    let storedList = JSON.parse(storage);
+    return storedList;
 }
