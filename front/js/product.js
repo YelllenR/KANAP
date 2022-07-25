@@ -146,12 +146,22 @@ function SaveProductToLocalStorage() {
     let newListProductInBasket = [];
 
     if (oldLocalStorage != null) {
-        newListProductInBasket = oldLocalStorage;
+        newListProductInBasket = oldLocalStorage; 
+        // Chek if and old product as same id and same color as new one
+        for (let i = 0; i < newListProductInBasket.length; i++){
+            if (newListProductInBasket[i].id === productCart.id && newListProductInBasket[i].color === productCart.color){
+                newListProductInBasket[i].quantity = parseInt(newListProductInBasket[i].quantity) + parseInt(productCart.quantity);
+                productCart = null;
+                break;
+            }
+        }
     }
-    
+
+    if(productCart != null){
+        newListProductInBasket.push(productCart);
+    }
+            
     // Save and replace old local storage with new list.
-    newListProductInBasket.push(productCart);
-    
     localStorage.setItem("ListSelectedProduct", JSON.stringify(newListProductInBasket));
 }
 
