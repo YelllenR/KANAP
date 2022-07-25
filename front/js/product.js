@@ -1,28 +1,3 @@
-// 
-// class Product {
-//     import = ("./script");
-// }
-class Product {
-    constructor(colors, _id, name, price, imageUrl, description, altTxt) {
-        this.colors = colors;
-        this._id = _id;
-        this.name = name;
-        this.price = price;
-        this.imageUrl = imageUrl;
-        this.description = description;
-        this.altTxt = altTxt;
-    }
-}
-
-// Object for product in cart
-class ProducInCart {
-    constructor(id, color, quantity) {
-        this.id = id;
-        this.color = color;
-        this.quantity = quantity
-    }
-}
-
 // const to access on a global scope
 const titleOfProduct = document.getElementById("title");
 const priceOfProduct = document.getElementById("price");
@@ -146,8 +121,9 @@ function SaveProductToLocalStorage() {
     let newListProductInBasket = [];
 
     if (oldLocalStorage != null) {
+
         newListProductInBasket = oldLocalStorage; 
-        // Chek if and old product as same id and same color as new one
+  
         for (let i = 0; i < newListProductInBasket.length; i++){
             if (newListProductInBasket[i].id === productCart.id && newListProductInBasket[i].color === productCart.color){
                 newListProductInBasket[i].quantity = parseInt(newListProductInBasket[i].quantity) + parseInt(productCart.quantity);
@@ -160,7 +136,8 @@ function SaveProductToLocalStorage() {
     if(productCart != null){
         newListProductInBasket.push(productCart);
     }
-            
+
+
     // Save and replace old local storage with new list.
     localStorage.setItem("ListSelectedProduct", JSON.stringify(newListProductInBasket));
 }

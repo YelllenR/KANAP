@@ -1,17 +1,3 @@
-
-class Product {
-    constructor(colors, _id, name, price, imageUrl, description, altTxt) {
-        this.colors = colors;
-        this._id = _id;
-        this.name = name;
-        this.price = price;
-        this.imageUrl = imageUrl;
-        this.description = description;
-        this.altTxt = altTxt;
-    }
-}
-
-
 // Fetch data from API, return JSON
 function FetchAndRenderProductsApi(getProductsUrl) {
     fetch(getProductsUrl)
@@ -55,10 +41,5 @@ function RenderProducts(productList) {
     return productList;
 }
 
-// Function for setting localStorage
-function SetLocalStorage(productList) {
-    let productListWithoutPrice = NullifyPrice(productList);
-    localStorage.setItem("productList", JSON.stringify(productListWithoutPrice));
-}
 
 
