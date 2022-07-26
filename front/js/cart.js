@@ -6,14 +6,15 @@ function FetchApiAndRenderElements(connextionToApi) {
     fetch(connextionToApi)
         .then(response => response.json())
         .then(jsonResponse => RenderSelectedItemsOnHtml(jsonResponse))
-        .then(() => AddEventOnOrderButton())
+        .then(() => DeleteOfItems())
 }
 
+
+const cart = GetProductListFromLocalStorage();
 // Render the cart list with extra elements on Html
 function RenderSelectedItemsOnHtml(productList) {
-    let cart = GetProductListFromLocalStorage();
 
-
+    let update = UpdateLocalStorage();
 
     let tagToRender = "";
     const sectionItemToRender = document.getElementById("cart__items");
@@ -62,20 +63,21 @@ function RenderSelectedItemsOnHtml(productList) {
                 totalPrice.textContent = priceOfProduct * quantity;
             }
         }
-
     }
-
-    DeletionOfItems(productList)
 }
 
 
-function DeletionOfItems(productList) {
+function DeleteOfItems() {
     let deleteItem = document.getElementsByClassName("deleteItem");
-    
-    for(let i = 0; i < deleteItem.length; i++){
-        deleteItem[i].addEventListener("click", function(event){
-            event.preventDefault;
-            const productOnHtml = document.getElementsByClassName("cart__item");
+    let productToDelete = document.querySelector(".cart__item");
+
+    let productToRemove = "";
+        
+
+    for (let j = 0; j < deleteItem.length; j++) {
+        deleteItem[j].addEventListener("click", function (event) {
+            deleteItem = event.target;
+            productToRemove = productToDelete.remove();
         });
     }
 }
@@ -90,7 +92,21 @@ function GetProductListFromLocalStorage() {
 }
 
 
-// Listening of clicks on button
-function AddEventOnOrderButton() {
 
+function UpdateLocalStorage(productList) {
+    let changeInputQuantity = document.getElementsByClassName("cart__item__content__settings__quantity");
+    let inputChange = document.getElementsByClassName(".itemQuantity");
+
+    for (let a = 0; a < inputChange.length; a++) {
+        inputChange[i].addEventListener("input", function (modifyQuantity) {
+            if(inputChange[i] != cart.quantity){
+                cart.quantity = inputChange[i];
+            }
+        });
+
+    }
+    console.log(cart.quantity)
 }
+
+
+
