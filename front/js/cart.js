@@ -7,14 +7,16 @@ function FetchApiAndRenderElements(connextionToApi) {
         .then(response => response.json())
         .then(jsonResponse => RenderSelectedItemsOnHtml(jsonResponse))
         .then(() => DeleteOfItems())
+        .then(() => PlusAndMinusQuantity())
+
 }
 
 
-const cart = GetProductListFromLocalStorage();
+
 // Render the cart list with extra elements on Html
 function RenderSelectedItemsOnHtml(productList) {
-
-    let update = UpdateLocalStorage();
+    // let update = UpdateLocalStorage();
+    let cart = GetProductListFromLocalStorage();
 
     let tagToRender = "";
     const sectionItemToRender = document.getElementById("cart__items");
@@ -59,29 +61,54 @@ function RenderSelectedItemsOnHtml(productList) {
 
                 sectionItemToRender.innerHTML = tagToRender;
 
-                // totalQuantity.textContent = quantity + card[i];
+                // let dataQuantity = cart[i].quantity * cart[i];
+
+                // totalQuantity.textContent = parseInt(dataQuantity);
+                // console.log(dataQuantity)
+
                 totalPrice.textContent = priceOfProduct * quantity;
             }
         }
     }
+    console.log(cart);
+
 }
 
 
-function DeleteOfItems() {
+function DeleteOfItems(productList) {
     let deleteItem = document.getElementsByClassName("deleteItem");
-    let productToDelete = document.querySelector(".cart__item");
+    let productToDelete = document.getElementsByClassName("cart__item");
 
-    let productToRemove = "";
-        
+    let cart = GetProductListFromLocalStorage();
+    let removeItemFromCartList = "";
 
-    for (let j = 0; j < deleteItem.length; j++) {
-        deleteItem[j].addEventListener("click", function (event) {
-            deleteItem = event.target;
-            productToRemove = productToDelete.remove();
-        });
+    for (let i = 0; i < productToDelete.length; i++) {
+
+        for (let j = 0; j < deleteItem.length; j++) {
+            deleteItem[j].addEventListener("click", function (event) {
+                event.currentTarget;
+                this.closest(".cart__item").remove();
+
+                removeItem = this.closest(".cart__item");
+
+                for (let k = 0; k < cart.length; k++) {
+                    if (cart[k].id === removeItem.dataset.id && cart[k].color === removeItem.dataset.color) {
+
+                        cart = cart.filter(productList => productList.id != removeItem.dataset.id && removeItem.dataset.color);
+                        console.log(cart)
+
+                        
+                        // removeItemFromCartList = cart.indexOf(cart[k]);
+                        // let updatCart = cart.slice(removeItemFromCartList);
+                        // UpdateLocalStorage(updatCart);
+                        // console.log(removeItemFromCartList)
+                    }
+                }
+            });
+        }
+        break;
     }
 }
-
 
 // Extract list of selected products from local storage
 function GetProductListFromLocalStorage() {
@@ -92,21 +119,42 @@ function GetProductListFromLocalStorage() {
 }
 
 
-
-function UpdateLocalStorage(productList) {
-    let changeInputQuantity = document.getElementsByClassName("cart__item__content__settings__quantity");
-    let inputChange = document.getElementsByClassName(".itemQuantity");
-
-    for (let a = 0; a < inputChange.length; a++) {
-        inputChange[i].addEventListener("input", function (modifyQuantity) {
-            if(inputChange[i] != cart.quantity){
-                cart.quantity = inputChange[i];
-            }
-        });
-
-    }
-    console.log(cart.quantity)
+// Updating localStorage according to modifications done by the user (deletion of products, changing quantities)
+function UpdateLocalStorage() {
+    localStorage.setItem("ListSelectedProduct", JSON.stringify());
 }
 
 
+function PlusAndMinusQuantity() {
+    let inputChange = document.getElementsByClassName("itemQuantity");
+    for (let i = 0; i < inputChange.length; i++) {
 
+        inputChange[i].addEventListener("change", function (changed) {
+            changed.target;
+
+            if (inputChange[i].value <= 0) {
+                return inputChange[i].value++;
+            }
+            if (inputChange[i].value >= 101) {
+                return inputChange[i].value = 100;
+            }
+        })
+    }
+}
+// const firstName = document.getElementById("firstName");
+// let orderFormQuestion = document.getElementsByClassName("cart__order__form__question")
+// function CheckingFormInputs() {
+
+//     const lastName = document.getElementById("lastName");
+//     const address = document.getElementById("address");
+//     const city = document.getElementById("city");
+//     const email = document.getElementById("email");
+
+
+//         // .forEach(input => {
+//         //      input.addEventListener("input", function(event) {
+//         //         console.log(orderFormQuestion);
+//         //      })
+//         // });
+
+// }
