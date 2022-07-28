@@ -6,8 +6,9 @@ function FetchApiAndRenderElements(connextionToApi) {
     fetch(connextionToApi)
         .then(response => response.json())
         .then(jsonResponse => RenderSelectedItemsOnHtml(jsonResponse))
-        .then(() => DeleteOfItems())
-        .then(() => PlusAndMinusQuantity())
+        .then(() => DeletionOfItems())
+        .then(() => ValidationOfForm())
+        .then(() => SettingAttributesOnInput())
 
 }
 
@@ -15,11 +16,11 @@ function FetchApiAndRenderElements(connextionToApi) {
 
 // Render the cart list with extra elements on Html
 function RenderSelectedItemsOnHtml(productList) {
-    // let update = UpdateLocalStorage();
+    const sectionItemToRender = document.getElementById("cart__items");
     let cart = GetProductListFromLocalStorage();
 
     let tagToRender = "";
-    const sectionItemToRender = document.getElementById("cart__items");
+
     let totalQuantity = document.getElementById("totalQuantity");
     let totalPrice = document.getElementById("totalPrice");
 
@@ -50,7 +51,7 @@ function RenderSelectedItemsOnHtml(productList) {
                         <div class="cart__item__content__settings">
                             <div class="cart__item__content__settings__quantity">
                                 <p>Qté : ${quantity}</p>
-                                <input type="number" class="itemQuantity" name="itemQuantity" min="1" max="100" value="42">
+                                <input type="number" class="itemQuantity" name="itemQuantity" min="1" max="100" value="${quantity}">
                             </div>
                             <div class="cart__item__content__settings__delete">
                                 <p class="deleteItem">Supprimer</p>
@@ -61,21 +62,15 @@ function RenderSelectedItemsOnHtml(productList) {
 
                 sectionItemToRender.innerHTML = tagToRender;
 
-                // let dataQuantity = cart[i].quantity * cart[i];
-
-                // totalQuantity.textContent = parseInt(dataQuantity);
-                // console.log(dataQuantity)
-
                 totalPrice.textContent = priceOfProduct * quantity;
             }
         }
     }
-    console.log(cart);
-
+    ModifyQuantity();
 }
 
-
-function DeleteOfItems(productList) {
+// Delete selected items on cart and updating the localStorage (calling the function UpdateLocalStorage(cart))
+function DeletionOfItems(productList) {
     let deleteItem = document.getElementsByClassName("deleteItem");
     let productToDelete = document.getElementsByClassName("cart__item");
 
@@ -94,14 +89,9 @@ function DeleteOfItems(productList) {
                 for (let k = 0; k < cart.length; k++) {
                     if (cart[k].id === removeItem.dataset.id && cart[k].color === removeItem.dataset.color) {
 
-                        cart = cart.filter(productList => productList.id != removeItem.dataset.id && removeItem.dataset.color);
-                        console.log(cart)
-
-                        
-                        // removeItemFromCartList = cart.indexOf(cart[k]);
-                        // let updatCart = cart.slice(removeItemFromCartList);
-                        // UpdateLocalStorage(updatCart);
-                        // console.log(removeItemFromCartList)
+                        removeItemFromCartList = cart.indexOf(cart[k]);
+                        cart.splice(removeItemFromCartList, 1);
+                        UpdateLocalStorage(cart);
                     }
                 }
             });
@@ -113,48 +103,98 @@ function DeleteOfItems(productList) {
 // Extract list of selected products from local storage
 function GetProductListFromLocalStorage() {
     let localStorageList = localStorage.getItem("ListSelectedProduct");
-    let listProducts = JSON.parse(localStorageList);
 
-    return listProducts;
+    if (localStorageList == null) {
+        return [];
+
+    } else {
+        let listProducts = JSON.parse(localStorageList);
+        return listProducts;
+    }
 }
 
 
 // Updating localStorage according to modifications done by the user (deletion of products, changing quantities)
-function UpdateLocalStorage() {
-    localStorage.setItem("ListSelectedProduct", JSON.stringify());
+function UpdateLocalStorage(cart) {
+    localStorage.setItem("ListSelectedProduct", JSON.stringify(cart));
 }
 
 
-function PlusAndMinusQuantity() {
+
+// increment or decrement total quantity of products according to the choosen quantity
+function ModifyQuantity() {
+    let cart = GetProductListFromLocalStorage();
     let inputChange = document.getElementsByClassName("itemQuantity");
-    for (let i = 0; i < inputChange.length; i++) {
+    let parentOfInputChange = document.getElementsByClassName("cart__item");
 
-        inputChange[i].addEventListener("change", function (changed) {
-            changed.target;
 
-            if (inputChange[i].value <= 0) {
-                return inputChange[i].value++;
+    for (let a = 0; a < parentOfInputChange.length; a++) {
+        for (let b = 0; b < cart.length; b++) {
+            if (cart[b].id === parentOfInputChange[a].dataset.id &&
+                cart[b].color === parentOfInputChange[a].dataset.color) {
+
+
+                inputChange[a].addEventListener("change", function (changed) {
+                    changed.preventDefault()
+
+                    if (inputChange[a].value <= 0) {
+                        return false
+                    }
+                    if (inputChange[a].value >= 101) {
+                        return false
+                    }
+                    cart[b].quantity = inputChange[a].value;
+                    UpdateLocalStorage(cart);
+                    return;
+                });
+                break;
             }
-            if (inputChange[i].value >= 101) {
-                return inputChange[i].value = 100;
-            }
-        })
+        }
     }
 }
-// const firstName = document.getElementById("firstName");
-// let orderFormQuestion = document.getElementsByClassName("cart__order__form__question")
-// function CheckingFormInputs() {
-
-//     const lastName = document.getElementById("lastName");
-//     const address = document.getElementById("address");
-//     const city = document.getElementById("city");
-//     const email = document.getElementById("email");
 
 
-//         // .forEach(input => {
-//         //      input.addEventListener("input", function(event) {
-//         //         console.log(orderFormQuestion);
-//         //      })
-//         // });
 
-// }
+function ValidationOfForm() {
+    document.querySelector("form").setAttribute("id", "form");
+    let getForm = document.querySelector("#form input[type = 'submit']");
+
+    getForm.addEventListener("click", (event) => {
+        
+       
+
+        if(getForm.value === ""){
+            event.preventDefault();
+            console.log("this is an error")
+        }
+
+    })
+    console.log(getForm)
+}
+
+function SettingAttributesOnInput() {
+
+    document.getElementById("firstName").setAttribute("pattern", "^[A-Za-z]+$");
+    document.getElementById("lastName").setAttribute("pattern", "/^[a-zA-Z]+$/i");
+    document.getElementById("address").setAttribute("pattern", "");
+    document.getElementById("city").setAttribute("pattern", "");
+    document.getElementById("email").setAttribute("pattern", "");
+
+}
+
+function RenderErrorMessage() {
+    let errorFirstName = document.getElementById("firstNameErrorMsg");
+    let errorLastName = document.getElementById("lastNameErrorMsg");
+    let errorAddress = document.getElementById("addressErrorMsg");
+    let errorCity = document.getElementById("cityErrorMsg");
+    let errorEmail = document.getElementById("emailErrorMsg");
+
+    const errorMessages = [
+        errorFirstName.innerText = "Merci d'indiquer uniquement des lettres",
+        errorLastName.textContent = "Veuillez mettre des lettres",
+        errorAddress.textContent = "",
+        errorCity.textContent = "",
+        errorEmail.textContent = ""
+    ]
+}
+
