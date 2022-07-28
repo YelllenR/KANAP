@@ -50,7 +50,7 @@ function RenderSelectedItemsOnHtml(productList) {
                         </div>
                         <div class="cart__item__content__settings">
                             <div class="cart__item__content__settings__quantity">
-                                <p>Qté : ${quantity}</p>
+                                <p class="quantityString">Qté : ${quantity}</p>
                                 <input type="number" class="itemQuantity" name="itemQuantity" min="1" max="100" value="${quantity}">
                             </div>
                             <div class="cart__item__content__settings__delete">
@@ -73,22 +73,18 @@ function RenderSelectedItemsOnHtml(productList) {
 function DeletionOfItems(productList) {
     let deleteItem = document.getElementsByClassName("deleteItem");
     let productToDelete = document.getElementsByClassName("cart__item");
-
     let cart = GetProductListFromLocalStorage();
     let removeItemFromCartList = "";
 
     for (let i = 0; i < productToDelete.length; i++) {
-
         for (let j = 0; j < deleteItem.length; j++) {
             deleteItem[j].addEventListener("click", function (event) {
                 event.currentTarget;
                 this.closest(".cart__item").remove();
-
                 removeItem = this.closest(".cart__item");
 
                 for (let k = 0; k < cart.length; k++) {
                     if (cart[k].id === removeItem.dataset.id && cart[k].color === removeItem.dataset.color) {
-
                         removeItemFromCartList = cart.indexOf(cart[k]);
                         cart.splice(removeItemFromCartList, 1);
                         UpdateLocalStorage(cart);
@@ -96,21 +92,18 @@ function DeletionOfItems(productList) {
                 }
             });
         }
-        break;
+        //break;
     }
 }
 
 // Extract list of selected products from local storage
 function GetProductListFromLocalStorage() {
     let localStorageList = localStorage.getItem("ListSelectedProduct");
-
     if (localStorageList == null) {
         return [];
-
-    } else {
-        let listProducts = JSON.parse(localStorageList);
-        return listProducts;
-    }
+    } 
+    let listProducts = JSON.parse(localStorageList);
+    return listProducts;
 }
 
 
@@ -126,25 +119,27 @@ function ModifyQuantity() {
     let cart = GetProductListFromLocalStorage();
     let inputChange = document.getElementsByClassName("itemQuantity");
     let parentOfInputChange = document.getElementsByClassName("cart__item");
-
+    let stringQuantity = document.getElementsByClassName("quantityString");
 
     for (let a = 0; a < parentOfInputChange.length; a++) {
         for (let b = 0; b < cart.length; b++) {
             if (cart[b].id === parentOfInputChange[a].dataset.id &&
                 cart[b].color === parentOfInputChange[a].dataset.color) {
 
-
                 inputChange[a].addEventListener("change", function (changed) {
                     changed.preventDefault()
+                    let quantity = inputChange[a].value;
 
-                    if (inputChange[a].value <= 0) {
+                    if (quantity <= 0 || quantity >= 101) {
                         return false
                     }
-                    if (inputChange[a].value >= 101) {
-                        return false
-                    }
-                    cart[b].quantity = inputChange[a].value;
+
+                    cart[b].quantity = quantity
+                    stringQuantity[a].innerHTML = "Qté " + quantity;
                     UpdateLocalStorage(cart);
+
+                    // ==> Recalcul total du prix
+
                     return;
                 });
                 break;
@@ -160,10 +155,10 @@ function ValidationOfForm() {
     let getForm = document.querySelector("#form input[type = 'submit']");
 
     getForm.addEventListener("click", (event) => {
-        
-       
 
-        if(getForm.value === ""){
+
+
+        if (getForm.value === "") {
             event.preventDefault();
             console.log("this is an error")
         }
