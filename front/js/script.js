@@ -26,17 +26,19 @@ function TypeProductList(products) {
 function RenderProducts(productList) {
     const articlesItems = document.querySelector("#items");
     let imgsDom = " ";
-    for (let i = 0; i < productList.length; i++) {
 
+    productList.forEach(product => {
         imgsDom +=
-            `<a href="./product.html?${productList[i]._id}">
-    <article>
-        <img src="${productList[i].imageUrl}" alt="${productList[i].altTxt}">
-        <h3 class="productName">${productList[i].name}</h3>
-        <p class="productDescription">${productList[i].description}</p>
-    </article>
-    </a>`
-    }
+        `<a href="./product.html?id=${product._id}">
+            <article>
+                <img src="${product.imageUrl}" alt="${product.altTxt}">
+                <h3 class="productName">${product.name}</h3>
+                <p class="productDescription">${product.description}</p>
+            </article>
+        </a>`
+    });
+
+
     articlesItems.innerHTML = imgsDom;
     return productList;
 }

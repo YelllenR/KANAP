@@ -7,28 +7,23 @@ function FetchApiAndRenderElements(connextionToApi) {
         .then(response => response.json())
         .then(jsonResponse => RenderSelectedItemsOnHtml(jsonResponse))
         .then(() => DeletionOfItems())
-        .then(() => ValidationOfForm())
-        .then(() => SettingAttributesOnInput())
+        .then(() => CheckingOfInputsInForm())
 
 }
-
 
 
 // Render the cart list with extra elements on Html
 function RenderSelectedItemsOnHtml(productList) {
     const sectionItemToRender = document.getElementById("cart__items");
     let cart = GetProductListFromLocalStorage();
-
     let tagToRender = "";
 
-    let totalQuantity = document.getElementById("totalQuantity");
-    let totalPrice = document.getElementById("totalPrice");
-
     for (let i = 0; i < cart.length; i++) {
-
         for (let j = 0; j < productList.length; j++) {
 
             if (cart[i].id === productList[j]._id) {
+                console.log("id = " + cart[i].id);
+
                 let quantity = cart[i].quantity;
                 let image = productList[j].imageUrl;
                 let name = productList[j].name;
@@ -61,12 +56,11 @@ function RenderSelectedItemsOnHtml(productList) {
                     </article>`
 
                 sectionItemToRender.innerHTML = tagToRender;
-
-                totalPrice.textContent = priceOfProduct * quantity;
             }
         }
     }
     ModifyQuantity();
+    CalculateTotal(productList)
 }
 
 // Delete selected items on cart and updating the localStorage (calling the function UpdateLocalStorage(cart))
@@ -92,7 +86,6 @@ function DeletionOfItems(productList) {
                 }
             });
         }
-        //break;
     }
 }
 
@@ -101,7 +94,7 @@ function GetProductListFromLocalStorage() {
     let localStorageList = localStorage.getItem("ListSelectedProduct");
     if (localStorageList == null) {
         return [];
-    } 
+    }
     let listProducts = JSON.parse(localStorageList);
     return listProducts;
 }
@@ -120,6 +113,9 @@ function ModifyQuantity() {
     let inputChange = document.getElementsByClassName("itemQuantity");
     let parentOfInputChange = document.getElementsByClassName("cart__item");
     let stringQuantity = document.getElementsByClassName("quantityString");
+    let totalQuantity = document.getElementById("totalQuantity");
+
+
 
     for (let a = 0; a < parentOfInputChange.length; a++) {
         for (let b = 0; b < cart.length; b++) {
@@ -133,12 +129,9 @@ function ModifyQuantity() {
                     if (quantity <= 0 || quantity >= 101) {
                         return false
                     }
-
                     cart[b].quantity = quantity
                     stringQuantity[a].innerHTML = "Qté " + quantity;
                     UpdateLocalStorage(cart);
-
-                    // ==> Recalcul total du prix
 
                     return;
                 });
@@ -148,48 +141,80 @@ function ModifyQuantity() {
     }
 }
 
+function CalculateTotal(productList) {
+    let cart = GetProductListFromLocalStorage();
+    let totalPrice = document.getElementById("totalPrice");
+    // let totalQuantity = document.getElementById("totalQuantity");
 
+    for (let a = 0; a < cart.length; a++) {
+        for (let i = 0; i < productList.length; i++) {
 
-function ValidationOfForm() {
-    document.querySelector("form").setAttribute("id", "form");
-    let getForm = document.querySelector("#form input[type = 'submit']");
+            if (productList[i]._id === cart[a].id && productList[i].colors === cart[a].color) {
+                console.log("ok");
+                totalPrice.innerHTML = productList[i].price * cart[a].quantity
+            }
 
-    getForm.addEventListener("click", (event) => {
-
-
-
-        if (getForm.value === "") {
-            event.preventDefault();
-            console.log("this is an error")
+            totalPrice.innerHTML = productList[i].price * cart[a].quantity
         }
-
-    })
-    console.log(getForm)
+    }
 }
 
-function SettingAttributesOnInput() {
+function CheckingOfInputsInForm() {
+    document.querySelector("form").setAttribute("id", "formPurchase");
+    let form = document.getElementById("formPurchase");
+    //  .addEventListener("submit", function(formInputData){
 
-    document.getElementById("firstName").setAttribute("pattern", "^[A-Za-z]+$");
-    document.getElementById("lastName").setAttribute("pattern", "/^[a-zA-Z]+$/i");
-    document.getElementById("address").setAttribute("pattern", "");
-    document.getElementById("city").setAttribute("pattern", "");
-    document.getElementById("email").setAttribute("pattern", "");
+    // formInputData.preventDefault()
+    // let formOnCart = formInputData.target;
+    //     let formData = new FormData(form);
+
+
+    //     let firstName = formData.get("firstName");
+    //     let lastName = formData.get("lastName");
+    //     let address = formData.get("address");
+    //     let city = formData.get("city");
+    //     let email = formData.get("email");
+
+    //     for(let key of formData.key()){
+    //         console.log(key, formData.get(key))
+    //     }
+    // // });
 
 }
 
-function RenderErrorMessage() {
-    let errorFirstName = document.getElementById("firstNameErrorMsg");
-    let errorLastName = document.getElementById("lastNameErrorMsg");
-    let errorAddress = document.getElementById("addressErrorMsg");
-    let errorCity = document.getElementById("cityErrorMsg");
-    let errorEmail = document.getElementById("emailErrorMsg");
+// function IsValid() {
+//     IsValid.preventDefault();
 
-    const errorMessages = [
-        errorFirstName.innerText = "Merci d'indiquer uniquement des lettres",
-        errorLastName.textContent = "Veuillez mettre des lettres",
-        errorAddress.textContent = "",
-        errorCity.textContent = "",
-        errorEmail.textContent = ""
-    ]
+
+//     for (let value of formData) {
+//         if (firstName[value] == "") {
+//             errorFirstName.innerText = "Merci de remplir ce champ avec votre nom";
+//         }else{
+//             errorFirstName.innerText = "";
+//         }
+
+//         RenderErrorMessage(messageError) 
+//     }
+// }
+
+function SendingFormData() {
+
+}
+
+function RenderErrorMessage(messageError) {
+    const errorLastName = document.getElementById("lastNameErrorMsg");
+    const errorFirstName = document.getElementById("firstNameErrorMsg");
+    const errorEmail = document.getElementById("emailErrorMsg");
+    const errorAddress = document.getElementById("addressErrorMsg");
+    const errorCity = document.getElementById("cityErrorMsg");
+
+
+
+    //     errorLastName.innerText = "Merci de remplir ce champ avec votre nom",
+    //     errorFirstName.innerText = "Merci de remplir ce champ avec votre prénom",
+    //     errorEmail.innerText = "Veuillez mettre une adresse email valide",
+    //     errorAddress.innerText = "Veuillez indiquer votre adresse",
+    //     errorCity.innerText = "Veuillez indiquer la ville",
+
 }
 

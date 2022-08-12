@@ -6,10 +6,10 @@ const imageOfProduct = document.querySelector(".item__img");
 const colorsSelection = document.getElementById("colors");
 
 // getting the id of the product with window lcoation search
-const keySearchValues = window.location.search.replace("?", "");
+const keySearchValues = new URLSearchParams(window.location.search);
 
 // Fetch - Calling the API adresse with the id route (also using the file Product.js in the models file)
-FetchAndRenderProductsApi('http://localhost:3000/api/products/' + keySearchValues);
+FetchAndRenderProductsApi('http://localhost:3000/api/products/' + keySearchValues.get("id"));
 
 
 // fetch, get response in json, convert it into an object, rendering the informations in html and checking the values before redirection
@@ -48,16 +48,14 @@ function SetHtmlElements(product) {
 // Event Listener on addToCart button that calls the OnClickCardButton.
 function AddEventListenerToCartButton() {
     const addingToCart = document.getElementById("addToCart");
-    addingToCart.addEventListener("click", function (event) {
-        event.preventDefault();
-        OnClickCardButton();
-    });
+    addingToCart.addEventListener("click", OnClickCardButton)
 }
 
 // --------------- Below - functions that are called only if button is clicked -----------------------------------
 
 // function that checks if values are Ok and then save them to localstorage. 
-function OnClickCardButton() {
+function OnClickCardButton(event) {
+    event.preventDefault();
     if (CheckingValues()) {
         SaveProductToLocalStorage();
     }
@@ -116,7 +114,8 @@ function SaveProductToLocalStorage() {
     const selectColor = document.getElementById("colors").value;
 
     // Create new object (from model ProducInCart) that holds the values selected
-    let productCart = new ProducInCart(keySearchValues, selectColor, inputQuantities);
+
+    let productCart = new ProducInCart(keySearchValues.get("id"), selectColor, inputQuantities);
 
     let newListProductInBasket = [];
 
@@ -140,6 +139,7 @@ function SaveProductToLocalStorage() {
 
     // Save and replace old local storage with new list.
     localStorage.setItem("ListSelectedProduct", JSON.stringify(newListProductInBasket));
+    console.log(newListProductInBasket)
 }
 
 
@@ -147,5 +147,7 @@ function SaveProductToLocalStorage() {
 function GetProductToLocalStorage() {
     let storage = localStorage.getItem("ListSelectedProduct");
     let storedList = JSON.parse(storage);
+
+
     return storedList;
 }
