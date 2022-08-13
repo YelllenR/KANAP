@@ -18,3 +18,4 @@ class ProducInCart {
         this.quantity = quantity
     }
 }
+
