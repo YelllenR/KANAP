@@ -1,7 +1,7 @@
+
+
 // Class of produit
 FetchApiAndRenderElements('http://localhost:3000/api/products');
-
-
 
 //  Fetch the API
 function FetchApiAndRenderElements(connextionToApi) {
@@ -160,7 +160,20 @@ function CalculateTotal(productList) {
     }
 }
 
-GetFormById();
+
+function ListenOnInputsInForm() {
+    document.querySelector("form").setAttribute("id", "formPurchase");
+    GetFormById();
+
+    form.addEventListener("submit", (event) => {
+        event.preventDefault();
+        form = event.target;
+
+        CheckingOfInputsInForm();
+        SendingFormData();
+    });
+}
+
 function GetFormById() {
     let idTag = (id) => document.getElementById(id);
 
@@ -178,7 +191,7 @@ function GetFormById() {
     email.required = false;
 }
 
-GetIdErrorMessage();
+
 function GetIdErrorMessage() {
     let error = (errorMessage) => document.getElementById(errorMessage);
     errorLastName = error("lastNameErrorMsg"),
@@ -189,77 +202,134 @@ function GetIdErrorMessage() {
 }
 
 
+function IsLettersInFirstNameTrue(firstName) {
+    let lettersInRegexFirstName = new RegExp("^[a-zA-Z][A-zÀ-ú]+$", "g");
 
-function TestRegexOfInputs() {
-    GetFormById();
+    return lettersInRegexFirstName.test(firstName.value.replace(/\s/g, ''));
+}
 
+function IsLettersInLastNameTrue(lastName) {
+    let letterInRegexLastName = new RegExp("^[a-zA-Z][A-zÀ-ú]+$", "g");
+
+    return letterInRegexLastName.test(lastName.value.replace(/\s/g, ''));
+}
+
+function IsAddressTrue(address) {
+    let addressRegex = new RegExp("d{0,4} +[a-zA-Z][A-zÀ-ú]{1,5} ?D?$", "g");
+
+    return addressRegex.test(address.value)
+}
+
+function IsCityTrue(city) {
+    let cityRegex = new RegExp("[a-zA-Z-][a-zA-Z]{1,5} ?[0-9]{0,5} ?$", "g");
+
+    return cityRegex.test(city.value.replace(/\s/g, ''));
+}
+
+
+function IsEmailTrue(email) {
     let emailRegex = new RegExp("^[a-zA-Z0-9.-_]+[@]{1}[a-zA-Z0-9.-_]+[.]{1}[a-z]{2,10}$", "g");
-    let testEmail = emailRegex.test(email.value);
-    if (testEmail) {
-        console.log(true);
-    } else {
-        console.log(false);
-    }
 
-
-
-    let letterOnlyRegex = new RegExp ("^[a-zA-Z][A-zÀ-ú]+$","g");
-
-    let testStringOnly = letterOnlyRegex.test(firstName.value);
-    if (testStringOnly) {
-        console.log(true);
-    } else {
-        console.log(false);
-    }
-
-
-
-    let addressRegex = new RegExp("/d{1,3}.?d{0,3}s[a-zA-Z]{2,30}s[a-zA-Z]{2,15}", "g");
-
-    
-    let cityRegex = /^[a-zA-Z]+(?:[\s-][a-zA-Z][A-zÀ-ú]+)*/g;
+    return emailRegex.test(email.value.replace(/\s/g, ''));
 }
 
-
-function ListenOnInputsInForm() {
-    document.querySelector("form").setAttribute("id", "formPurchase");
-    GetFormById();
-
-    form.addEventListener("submit", (event) => {
-        event.preventDefault();
-        TestRegexOfInputs()
-        CheckingOfInputsInForm();
-
-        // console.log("Form submited");
-    });
-}
 
 
 function CheckingOfInputsInForm() {
     GetFormById();
     GetIdErrorMessage();
-
-    let messageForEmptyFields = "Veuillez renseigner ce champs";
+    let messageForEmptyFields = "Le champs ne peut être vide";
     let regexErrorMessage = "Veuillez respecter la saisie des champs";
 
 
+    if (IsLettersInFirstNameTrue(firstName)) {
 
+    } else if (firstName.value === "") {
+        errorFirstName.innerHTML = messageForEmptyFields;
+    } else {
+        errorFirstName.innerHTML = regexErrorMessage;
+    }
 
-    // if (firstName.value.trim() == letterOnlyRegex || firstName.value.trim() === "") {
-    //     errorFirstName.innerHTML = regexErrorMessage;
+    if (IsLettersInLastNameTrue(lastName)) {
 
-    // } else {
-    //     errorFirstName.innerHTML = "yes";
-    //     console.log(errorFirstName.innerHTML = "yes")
-    // }
+    } else if (lastName.value === "") {
+        errorLastName.innerHTML = messageForEmptyFields;
+    } else {
+        errorLastName.innerHTML = regexErrorMessage;
+    }
+
+    if (IsAddressTrue(address)) {
+
+    } else if (address.value === "") {
+        errorAddress.innerHTML = messageForEmptyFields;
+    } else {
+        errorAddress.innerHTML = regexErrorMessage;
+    }
+
+    if (IsCityTrue(city)) {
+
+    } else if (city.value === "") {
+        errorCity.innerHTML = messageForEmptyFields;
+    } else {
+        errorCity.innerHTML = regexErrorMessage;
+    }
+
+    if (IsEmailTrue(email)) {
+
+    } else if (email.value === "") {
+        errorEmail.innerHTML = messageForEmptyFields;
+    } else {
+        errorEmail.innerHTML = regexErrorMessage;
+    }
+}
+
+// need conditional statement for empty fields
+function GetFormDataInputs() {
+    GetFormById();
+
+    const formInputData = new FormData(form);
+    let contact = {};
+
+    for (let keysOfData of formInputData.keys()) {
+        contact[keysOfData] = formInputData.get(keysOfData);
+    }
+     return contact;
 }
 
 
+function SendingFormData(orderInformations) {
+    GetFormDataInputs();
 
-function SendingFormData() {
-    // form data to send informations
+    let formHeader = new Headers();
+    formHeader.append('Content-type', 'application/json');
+
+    const urlOrder = "http://localhost:3000/api/products/order";
+
+    let req = new Request(urlOrder, {
+        header: formHeader,
+        body: FormatingRequestForPost(orderInformations),
+        method: 'POST',
+    });
+
+    fetch(req)
+    .then(response => response.json())
+    .then((json) => console.log(json))
+
+    // products: [string] <-- array of product _id
 }
 
 
+function FormatingRequestForPost() {
+    let orderInformations = {
+        contact: GetFormDataInputs(),
+        products: GetProductListFromLocalStorage(),
+        orderId: crypto.randomUUID(),
+    }
 
+    // need to remove color & qts from localStorage
+
+    JSON.stringify(orderInformations);
+
+    console.log(orderInformations);
+}
 
