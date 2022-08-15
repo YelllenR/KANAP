@@ -15,7 +15,13 @@ class ProducInCart {
     constructor(id, color, quantity) {
         this.id = id;
         this.color = color;
-        this.quantity = quantity
+        this.quantity = quantity;
     }
 }
 
+class OrderConfirmation{
+    constructor(contact, orderId){
+        this.contact = contact; 
+        this.orderId = orderId;
+    }
+}

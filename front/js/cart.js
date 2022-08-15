@@ -9,8 +9,7 @@ function FetchApiAndRenderElements(connextionToApi) {
         .then(response => response.json())
         .then(jsonResponse => RenderSelectedItemsOnHtml(jsonResponse))
         .then(() => DeletionOfItems())
-        .then(() => ListenOnInputsInForm())
-
+        .then(() => RetrievingDataOnEventListener())
 }
 
 
@@ -114,9 +113,7 @@ function ModifyQuantity() {
     let inputChange = document.getElementsByClassName("itemQuantity");
     let parentOfInputChange = document.getElementsByClassName("cart__item");
     let stringQuantity = document.getElementsByClassName("quantityString");
-    let totalQuantity = document.getElementById("totalQuantity");
-
-
+    // let totalQuantity = document.getElementById("totalQuantity");
 
     for (let a = 0; a < parentOfInputChange.length; a++) {
         for (let b = 0; b < cart.length; b++) {
@@ -145,7 +142,7 @@ function ModifyQuantity() {
 function CalculateTotal(productList) {
     let cart = GetProductListFromLocalStorage();
     let totalPrice = document.getElementById("totalPrice");
-    // let totalQuantity = document.getElementById("totalQuantity");
+    let totalQuantity = document.getElementById("totalQuantity");
 
     for (let a = 0; a < cart.length; a++) {
         for (let i = 0; i < productList.length; i++) {
@@ -161,19 +158,104 @@ function CalculateTotal(productList) {
 }
 
 
-function ListenOnInputsInForm() {
+// Listening on submit, condition to send data only if the check has been successfull
+function RetrievingDataOnEventListener(data) {
     document.querySelector("form").setAttribute("id", "formPurchase");
+
+
     GetFormById();
 
     form.addEventListener("submit", (event) => {
         event.preventDefault();
         form = event.target;
 
-        CheckingOfInputsInForm();
-        SendingFormData();
+        if (CheckingOfInputsInForm()) {
+            SendingFormData();
+        }
+
     });
 }
 
+// Checks all the inputs, calling this function in RetrievingDataOnEventListener()
+function CheckingOfInputsInForm() {
+    GetFormById();
+    GetIdErrorMessage();
+    let messageForEmptyFields = "Le champs ne peut être vide";
+    let regexErrorMessage = "Veuillez respecter la saisie des champs";
+
+    if (IsLettersInFirstNameTrue(firstName)) {
+
+    } else if (firstName.value === "") {
+        errorFirstName.innerHTML = messageForEmptyFields;
+    } else {
+        errorFirstName.innerHTML = regexErrorMessage;
+    }
+
+    if (IsLettersInLastNameTrue(lastName)) {
+
+    } else if (lastName.value === "") {
+        errorLastName.innerHTML = messageForEmptyFields;
+
+    } else {
+        errorLastName.innerHTML = regexErrorMessage;
+    }
+
+    if (IsAddressTrue(address)) {
+
+    } else if (address.value === "") {
+        errorAddress.innerHTML = messageForEmptyFields;
+
+    } else {
+        errorAddress.innerHTML = regexErrorMessage;
+    }
+
+    if (IsCityTrue(city)) {
+
+    } else if (city.value === "") {
+        errorCity.innerHTML = messageForEmptyFields;
+
+    } else {
+        errorCity.innerHTML = regexErrorMessage;
+    }
+
+    if (IsEmailTrue(email)) {
+
+    } else if (email.value === "") {
+        errorEmail.innerHTML = messageForEmptyFields;
+
+    } else {
+        errorEmail.innerHTML = regexErrorMessage;
+    }
+
+    return true
+}
+
+
+// Function to send the data
+function SendingFormData() {
+    GetFormDataInputs();
+    let orderInformations = FormatingRequestForPost();
+
+    let formHeader = new Headers();
+    formHeader.append('Content-type', 'application/json');
+
+    const urlOrder = "http://localhost:3000/api/products/order";
+
+    let request = new Request(urlOrder, {
+        headers: formHeader,
+        method: 'POST',
+        body: JSON.stringify(orderInformations)
+    });
+
+
+    fetch(request)
+        .then(response => response.json())
+        .then((data) => StockInformationsOfInputFields(data))
+        .then((data) => SetInformationOfOrder(data))
+}
+
+
+// getting Id's of form fields and removing required in html
 function GetFormById() {
     let idTag = (id) => document.getElementById(id);
 
@@ -189,9 +271,10 @@ function GetFormById() {
     address.required = false;
     city.required = false;
     email.required = false;
+
 }
 
-
+// Function to get error tag IDs
 function GetIdErrorMessage() {
     let error = (errorMessage) => document.getElementById(errorMessage);
     errorLastName = error("lastNameErrorMsg"),
@@ -202,6 +285,7 @@ function GetIdErrorMessage() {
 }
 
 
+// Checking input fields with regex and testing them
 function IsLettersInFirstNameTrue(firstName) {
     let lettersInRegexFirstName = new RegExp("^[a-zA-Z][A-zÀ-ú]+$", "g");
 
@@ -235,55 +319,7 @@ function IsEmailTrue(email) {
 
 
 
-function CheckingOfInputsInForm() {
-    GetFormById();
-    GetIdErrorMessage();
-    let messageForEmptyFields = "Le champs ne peut être vide";
-    let regexErrorMessage = "Veuillez respecter la saisie des champs";
-
-
-    if (IsLettersInFirstNameTrue(firstName)) {
-
-    } else if (firstName.value === "") {
-        errorFirstName.innerHTML = messageForEmptyFields;
-    } else {
-        errorFirstName.innerHTML = regexErrorMessage;
-    }
-
-    if (IsLettersInLastNameTrue(lastName)) {
-
-    } else if (lastName.value === "") {
-        errorLastName.innerHTML = messageForEmptyFields;
-    } else {
-        errorLastName.innerHTML = regexErrorMessage;
-    }
-
-    if (IsAddressTrue(address)) {
-
-    } else if (address.value === "") {
-        errorAddress.innerHTML = messageForEmptyFields;
-    } else {
-        errorAddress.innerHTML = regexErrorMessage;
-    }
-
-    if (IsCityTrue(city)) {
-
-    } else if (city.value === "") {
-        errorCity.innerHTML = messageForEmptyFields;
-    } else {
-        errorCity.innerHTML = regexErrorMessage;
-    }
-
-    if (IsEmailTrue(email)) {
-
-    } else if (email.value === "") {
-        errorEmail.innerHTML = messageForEmptyFields;
-    } else {
-        errorEmail.innerHTML = regexErrorMessage;
-    }
-}
-
-// need conditional statement for empty fields
+// To get all the values of the form with formData
 function GetFormDataInputs() {
     GetFormById();
 
@@ -293,43 +329,58 @@ function GetFormDataInputs() {
     for (let keysOfData of formInputData.keys()) {
         contact[keysOfData] = formInputData.get(keysOfData);
     }
-     return contact;
+    return contact;
 }
 
 
-function SendingFormData(orderInformations) {
-    GetFormDataInputs();
 
-    let formHeader = new Headers();
-    formHeader.append('Content-type', 'application/json');
-
-    const urlOrder = "http://localhost:3000/api/products/order";
-
-    let req = new Request(urlOrder, {
-        header: formHeader,
-        body: FormatingRequestForPost(orderInformations),
-        method: 'POST',
-    });
-
-    fetch(req)
-    .then(response => response.json())
-    .then((json) => console.log(json))
-
-    // products: [string] <-- array of product _id
-}
-
-
+// Loops through localStorage to get only the ProductId, 
+// variable orderInformations stores the requested results and converts it into Json.
 function FormatingRequestForPost() {
-    let orderInformations = {
-        contact: GetFormDataInputs(),
-        products: GetProductListFromLocalStorage(),
-        orderId: crypto.randomUUID(),
+    let productsId = GetProductListFromLocalStorage();
+    let products = [];
+
+    for (let i = 0; i < productsId.length; i++) {
+        products.push(productsId[i].id);
     }
 
-    // need to remove color & qts from localStorage
+    let orderInformations = {
+        contact: GetFormDataInputs(),
+        products: products
+    }
 
-    JSON.stringify(orderInformations);
-
-    console.log(orderInformations);
+    return orderInformations;
 }
+
+// Creates a new object that contains the information got from the response.
+function StockInformationsOfInputFields(data) {
+    Object.assign(new OrderConfirmation, data)
+    return data
+}
+
+// setting only contact's informations in localStorage
+function SetInformationOfOrder(data) {
+    let dataOfContact = data.contact;
+
+    let dataOfOrder = data.orderId;
+    let urlOfOrder = new URL("confirmation.html");
+
+
+    addId.set(dataOfOrder)
+    addId.toString();
+
+    localStorage.setItem("contactInformations.html", JSON.stringify(dataOfContact));
+
+    GetContactInfosFromLocalStorage();
+
+}
+
+// Getting the localStorage
+function GetContactInfosFromLocalStorage() {
+    let storageForContact = localStorage.getItem("contactInformations");
+    let storagageContact = JSON.parse(storageForContact);
+
+    return storagageContact;
+}
+
 
