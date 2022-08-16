@@ -10,6 +10,8 @@ function FetchApiAndRenderElements(connextionToApi) {
         .then(jsonResponse => RenderSelectedItemsOnHtml(jsonResponse))
         .then(() => DeletionOfItems())
         .then(() => RetrievingDataOnEventListener())
+        .then(() => Redirect())
+
 }
 
 
@@ -89,10 +91,13 @@ function DeletionOfItems(productList) {
     }
 }
 
-// Extract list of selected products from local storage
+// Extract list of selected products from local storage and if it is empty, it trigers an alert
 function GetProductListFromLocalStorage() {
     let localStorageList = localStorage.getItem("ListSelectedProduct");
     if (localStorageList == null) {
+        submitBtn.style.backgroundColor = 'red';
+        alert("Aucun article sélectionné n'a été trouvé");
+        
         return [];
     }
     let listProducts = JSON.parse(localStorageList);
@@ -159,40 +164,51 @@ function CalculateTotal(productList) {
 
 
 // Listening on submit, condition to send data only if the check has been successfull
-function RetrievingDataOnEventListener(data) {
+function RetrievingDataOnEventListener() {
     document.querySelector("form").setAttribute("id", "formPurchase");
-
-
     GetFormById();
 
-    form.addEventListener("submit", (event) => {
+    form.addEventListener("change", (event) => {
         event.preventDefault();
-        form = event.target;
+        document.getElementById("formPurchase").setAttribute("method", "post");
 
         if (CheckingOfInputsInForm()) {
             SendingFormData();
         }
-
     });
+}
+
+const submitBtn = document.getElementById("order");
+
+function Redirect(urlConfirmWithId){
+    GetProductListFromLocalStorage();
+    submitBtn.onclick = (e => {
+        e.preventDefault();
+        SetIdInUrl(urlConfirmWithId)
+        location.href= urlConfirmWithId;
+    })
 }
 
 // Checks all the inputs, calling this function in RetrievingDataOnEventListener()
 function CheckingOfInputsInForm() {
     GetFormById();
     GetIdErrorMessage();
+
     let messageForEmptyFields = "Le champs ne peut être vide";
     let regexErrorMessage = "Veuillez respecter la saisie des champs";
 
     if (IsLettersInFirstNameTrue(firstName)) {
-
+        errorFirstName.innerHTML = "";
     } else if (firstName.value === "") {
         errorFirstName.innerHTML = messageForEmptyFields;
+
     } else {
         errorFirstName.innerHTML = regexErrorMessage;
+
     }
 
     if (IsLettersInLastNameTrue(lastName)) {
-
+        errorLastName.innerHTML = "";
     } else if (lastName.value === "") {
         errorLastName.innerHTML = messageForEmptyFields;
 
@@ -201,7 +217,7 @@ function CheckingOfInputsInForm() {
     }
 
     if (IsAddressTrue(address)) {
-
+        errorAddress.innerHTML = "";
     } else if (address.value === "") {
         errorAddress.innerHTML = messageForEmptyFields;
 
@@ -210,7 +226,7 @@ function CheckingOfInputsInForm() {
     }
 
     if (IsCityTrue(city)) {
-
+        errorCity.innerHTML = "";
     } else if (city.value === "") {
         errorCity.innerHTML = messageForEmptyFields;
 
@@ -219,7 +235,7 @@ function CheckingOfInputsInForm() {
     }
 
     if (IsEmailTrue(email)) {
-
+        errorEmail.innerHTML = "";
     } else if (email.value === "") {
         errorEmail.innerHTML = messageForEmptyFields;
 
@@ -231,9 +247,11 @@ function CheckingOfInputsInForm() {
 }
 
 
+
 // Function to send the data
 function SendingFormData() {
     GetFormDataInputs();
+
     let orderInformations = FormatingRequestForPost();
 
     let formHeader = new Headers();
@@ -251,7 +269,8 @@ function SendingFormData() {
     fetch(request)
         .then(response => response.json())
         .then((data) => StockInformationsOfInputFields(data))
-        .then((data) => SetInformationOfOrder(data))
+        .then((contactInformations) => SetInformationOfOrder(contactInformations))
+
 }
 
 
@@ -319,6 +338,7 @@ function IsEmailTrue(email) {
 
 
 
+
 // To get all the values of the form with formData
 function GetFormDataInputs() {
     GetFormById();
@@ -328,7 +348,15 @@ function GetFormDataInputs() {
 
     for (let keysOfData of formInputData.keys()) {
         contact[keysOfData] = formInputData.get(keysOfData);
+
+        if (contact[keysOfData] === "") {
+            // document.getElementById("order").disabled = true;
+
+        } else {
+            document.getElementById("order").disabled = false;
+        }
     }
+
     return contact;
 }
 
@@ -352,35 +380,47 @@ function FormatingRequestForPost() {
     return orderInformations;
 }
 
+
 // Creates a new object that contains the information got from the response.
 function StockInformationsOfInputFields(data) {
-    Object.assign(new OrderConfirmation, data)
-    return data
+    let informationsData = Object.assign(new OrderConfirmation, data);
+
+    let dataOfOrderId = informationsData.orderId;
+    let contactInformations = informationsData.contact;
+    
+
+    return dataOfOrderId, contactInformations, SetIdInUrl(dataOfOrderId);
 }
 
-// setting only contact's informations in localStorage
-function SetInformationOfOrder(data) {
-    let dataOfContact = data.contact;
+function SetIdInUrl(dataOfOrderId){
+    
+    let urlConfirmation = "http://127.0.0.1:5500/front/html/confirmation.html";
+    let urlConfirmWithId = new URL(urlConfirmation);
+    urlConfirmWithId.searchParams.append("id", dataOfOrderId);
+    urlConfirmWithId.toString()
+    console.log(urlConfirmWithId)
 
-    let dataOfOrder = data.orderId;
-    let urlOfOrder = new URL("confirmation.html");
-
-
-    addId.set(dataOfOrder)
-    addId.toString();
-
-    localStorage.setItem("contactInformations.html", JSON.stringify(dataOfContact));
-
-    GetContactInfosFromLocalStorage();
+    submitBtn.setAttribute("href", urlConfirmWithId);
 
 }
+
+// setting data received in localStorage for contact if the function StockInformationsOfInputFields has value
+function SetInformationOfOrder(contactInformations) {
+    if (contactInformations) {
+        localStorage.setItem("informationOfContact", JSON.stringify(contactInformations));
+        GetContactInfosFromLocalStorage();
+    }
+
+}
+
 
 // Getting the localStorage
-function GetContactInfosFromLocalStorage() {
+function GetContactInfosFromLocalStorage(contactInformations) {
     let storageForContact = localStorage.getItem("contactInformations");
-    let storagageContact = JSON.parse(storageForContact);
+    let storagingContact = JSON.parse(storageForContact);
 
-    return storagageContact;
+
+    return storagingContact;
 }
 
 

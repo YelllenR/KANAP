@@ -20,8 +20,9 @@ class ProducInCart {
 }
 
 class OrderConfirmation{
-    constructor(contact, orderId){
+    constructor(contact, orderId, product){
         this.contact = contact; 
         this.orderId = orderId;
+        this.product = product;
     }
 }
