@@ -9,9 +9,8 @@ function FetchApiAndRenderElements(connextionToApi) {
         .then(response => response.json())
         .then(jsonResponse => RenderSelectedItemsOnHtml(jsonResponse))
         .then(() => DeletionOfItems())
-        .then(() => RetrievingDataOnEventListener())
-        .then(() => Redirect())
-
+        .then((urlConfirmWithId) => RetrievingDataOnEventListener(urlConfirmWithId))
+        .then(() => SendingFormData())
 }
 
 
@@ -97,7 +96,7 @@ function GetProductListFromLocalStorage() {
     if (localStorageList == null) {
         submitBtn.style.backgroundColor = 'red';
         alert("Aucun article sélectionné n'a été trouvé");
-        
+
         return [];
     }
     let listProducts = JSON.parse(localStorageList);
@@ -167,83 +166,109 @@ function CalculateTotal(productList) {
 function RetrievingDataOnEventListener() {
     document.querySelector("form").setAttribute("id", "formPurchase");
     GetFormById();
+    ChangeFormEvent()
+}
 
+
+function ChangeFormEvent() {
     form.addEventListener("change", (event) => {
-        event.preventDefault();
-        document.getElementById("formPurchase").setAttribute("method", "post");
-
+        event.preventDefault()
         if (CheckingOfInputsInForm()) {
             SendingFormData();
+            return true;
         }
     });
 }
 
 const submitBtn = document.getElementById("order");
 
-function Redirect(urlConfirmWithId){
+// event handler on btn and redirect to confirmation page with id 
+function Redirect(dataOfOrderId) {
+    let formAction = document.getElementById("formPurchase");
     GetProductListFromLocalStorage();
+    CheckingOfInputsInForm();
     submitBtn.onclick = (e => {
         e.preventDefault();
-        SetIdInUrl(urlConfirmWithId)
-        location.href= urlConfirmWithId;
-    })
+        formAction.setAttribute("method", "post");
+        window.location.href = SetIdInUrl(dataOfOrderId);
+    });
 }
+
 
 // Checks all the inputs, calling this function in RetrievingDataOnEventListener()
 function CheckingOfInputsInForm() {
     GetFormById();
     GetIdErrorMessage();
 
-    let messageForEmptyFields = "Le champs ne peut être vide";
-    let regexErrorMessage = "Veuillez respecter la saisie des champs";
+    const messageForEmptyFields = "Le champs ne peut être vide";
+    const regexErrorMessage = "Veuillez respecter la saisie des champs";
 
     if (IsLettersInFirstNameTrue(firstName)) {
         errorFirstName.innerHTML = "";
+
+
     } else if (firstName.value === "") {
         errorFirstName.innerHTML = messageForEmptyFields;
+        document.getElementById("order").disabled = true;
 
     } else {
         errorFirstName.innerHTML = regexErrorMessage;
-
+        document.getElementById("order").disabled = true;
     }
 
     if (IsLettersInLastNameTrue(lastName)) {
         errorLastName.innerHTML = "";
+
+
     } else if (lastName.value === "") {
         errorLastName.innerHTML = messageForEmptyFields;
+        document.getElementById("order").disabled = true;
 
     } else {
         errorLastName.innerHTML = regexErrorMessage;
+        document.getElementById("order").disabled = true;
     }
 
     if (IsAddressTrue(address)) {
         errorAddress.innerHTML = "";
+
+
     } else if (address.value === "") {
+        document.getElementById("order").disabled = true;
         errorAddress.innerHTML = messageForEmptyFields;
 
     } else {
         errorAddress.innerHTML = regexErrorMessage;
+        document.getElementById("order").disabled = true;
     }
 
     if (IsCityTrue(city)) {
         errorCity.innerHTML = "";
+
+
     } else if (city.value === "") {
         errorCity.innerHTML = messageForEmptyFields;
+        document.getElementById("order").disabled = true;
 
     } else {
         errorCity.innerHTML = regexErrorMessage;
+        document.getElementById("order").disabled = true;
+
     }
 
     if (IsEmailTrue(email)) {
         errorEmail.innerHTML = "";
+
     } else if (email.value === "") {
         errorEmail.innerHTML = messageForEmptyFields;
+        document.getElementById("order").disabled = true;;
 
     } else {
         errorEmail.innerHTML = regexErrorMessage;
+        document.getElementById("order").disabled = true;
     }
 
-    return true
+    return true;
 }
 
 
@@ -259,7 +284,7 @@ function SendingFormData() {
 
     const urlOrder = "http://localhost:3000/api/products/order";
 
-    let request = new Request(urlOrder, {
+    const request = new Request(urlOrder, {
         headers: formHeader,
         method: 'POST',
         body: JSON.stringify(orderInformations)
@@ -269,14 +294,14 @@ function SendingFormData() {
     fetch(request)
         .then(response => response.json())
         .then((data) => StockInformationsOfInputFields(data))
-        .then((contactInformations) => SetInformationOfOrder(contactInformations))
+        .then((dataOfOrderId) => Redirect(dataOfOrderId))
 
 }
 
 
 // getting Id's of form fields and removing required in html
 function GetFormById() {
-    let idTag = (id) => document.getElementById(id);
+    const idTag = (id) => document.getElementById(id);
 
     form = idTag("formPurchase"),
         firstName = idTag("firstName"),
@@ -306,34 +331,34 @@ function GetIdErrorMessage() {
 
 // Checking input fields with regex and testing them
 function IsLettersInFirstNameTrue(firstName) {
-    let lettersInRegexFirstName = new RegExp("^[a-zA-Z][A-zÀ-ú]+$", "g");
+    let lettersInRegexFirstName = new RegExp("^[a-zA-Z][A-zÀ-ú]{0,40}$", "g");
 
-    return lettersInRegexFirstName.test(firstName.value.replace(/\s/g, ''));
+    return lettersInRegexFirstName.test(firstName.value.trim(''));
 }
 
 function IsLettersInLastNameTrue(lastName) {
     let letterInRegexLastName = new RegExp("^[a-zA-Z][A-zÀ-ú]+$", "g");
 
-    return letterInRegexLastName.test(lastName.value.replace(/\s/g, ''));
+    return letterInRegexLastName.test(lastName.value.trim(''));
 }
 
 function IsAddressTrue(address) {
     let addressRegex = new RegExp("d{0,4} +[a-zA-Z][A-zÀ-ú]{1,5} ?D?$", "g");
 
-    return addressRegex.test(address.value)
+    return addressRegex.test(address.value.trim(''))
 }
 
 function IsCityTrue(city) {
     let cityRegex = new RegExp("[a-zA-Z-][a-zA-Z]{1,5} ?[0-9]{0,5} ?$", "g");
 
-    return cityRegex.test(city.value.replace(/\s/g, ''));
+    return cityRegex.test(city.value.trim(''));
 }
 
 
 function IsEmailTrue(email) {
     let emailRegex = new RegExp("^[a-zA-Z0-9.-_]+[@]{1}[a-zA-Z0-9.-_]+[.]{1}[a-z]{2,10}$", "g");
 
-    return emailRegex.test(email.value.replace(/\s/g, ''));
+    return emailRegex.test(email.value.trim(''));
 }
 
 
@@ -349,12 +374,6 @@ function GetFormDataInputs() {
     for (let keysOfData of formInputData.keys()) {
         contact[keysOfData] = formInputData.get(keysOfData);
 
-        if (contact[keysOfData] === "") {
-            // document.getElementById("order").disabled = true;
-
-        } else {
-            document.getElementById("order").disabled = false;
-        }
     }
 
     return contact;
@@ -382,45 +401,26 @@ function FormatingRequestForPost() {
 
 
 // Creates a new object that contains the information got from the response.
+// Leave contactInformations in object in case of future use
 function StockInformationsOfInputFields(data) {
     let informationsData = Object.assign(new OrderConfirmation, data);
 
     let dataOfOrderId = informationsData.orderId;
-    let contactInformations = informationsData.contact;
-    
+    contactInformations = informationsData.contact;
 
-    return dataOfOrderId, contactInformations, SetIdInUrl(dataOfOrderId);
+    SetIdInUrl(dataOfOrderId);
+
+    return dataOfOrderId;
 }
 
-function SetIdInUrl(dataOfOrderId){
-    
-    let urlConfirmation = "http://127.0.0.1:5500/front/html/confirmation.html";
-    let urlConfirmWithId = new URL(urlConfirmation);
-    urlConfirmWithId.searchParams.append("id", dataOfOrderId);
-    urlConfirmWithId.toString()
-    console.log(urlConfirmWithId)
+function SetIdInUrl(dataOfOrderId) {
 
-    submitBtn.setAttribute("href", urlConfirmWithId);
+    let urlConfirmWithId = new URL("http://127.0.0.1:5500/front/html/confirmation.html");
+    urlConfirmWithId.searchParams.append("OrderId", dataOfOrderId);
+    urlConfirmWithId.toString();
 
+    console.log(urlConfirmWithId);
+
+    return urlConfirmWithId;
 }
-
-// setting data received in localStorage for contact if the function StockInformationsOfInputFields has value
-function SetInformationOfOrder(contactInformations) {
-    if (contactInformations) {
-        localStorage.setItem("informationOfContact", JSON.stringify(contactInformations));
-        GetContactInfosFromLocalStorage();
-    }
-
-}
-
-
-// Getting the localStorage
-function GetContactInfosFromLocalStorage(contactInformations) {
-    let storageForContact = localStorage.getItem("contactInformations");
-    let storagingContact = JSON.parse(storageForContact);
-
-
-    return storagingContact;
-}
-
 
