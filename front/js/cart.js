@@ -20,17 +20,18 @@ function RenderSelectedItemsOnHtml(productList) {
     let cart = GetProductListFromLocalStorage();
     let tagToRender = "";
 
-    for (let i = 0; i < cart.length; i++) {
+    for (let itemInLocalStorage of cart) {
+
         for (let j = 0; j < productList.length; j++) {
 
-            if (cart[i].id === productList[j]._id) {
+            if (itemInLocalStorage.id === productList[j]._id) {
 
-                let quantity = cart[i].quantity;
+                let quantity = itemInLocalStorage.quantity;
                 let image = productList[j].imageUrl;
                 let name = productList[j].name;
-                let id = cart[i].id;
+                let id = itemInLocalStorage.id;
                 let textImage = productList[j].altTxt;
-                let color = cart[i].color;
+                let color = itemInLocalStorage.color;
                 let priceOfProduct = productList[j].price * quantity;
 
                 tagToRender += `
@@ -72,15 +73,16 @@ function DeletionOfItems(productList) {
     let removeItemFromCartList = "";
 
     for (let i = 0; i < productToDelete.length; i++) {
-        for (let j = 0; j < deleteItem.length; j++) {
-            deleteItem[j].addEventListener("click", function (event) {
+
+        for (let deleteItemButton of deleteItem) {
+            deleteItemButton.addEventListener("click", function (event) {
                 event.currentTarget;
                 this.closest(".cart__item").remove();
                 removeItem = this.closest(".cart__item");
 
-                for (let k = 0; k < cart.length; k++) {
-                    if (cart[k].id === removeItem.dataset.id && cart[k].color === removeItem.dataset.color) {
-                        removeItemFromCartList = cart.indexOf(cart[k]);
+                for (let valueK of cart) {
+                    if (valueK.id === removeItem.dataset.id && valueK.color === removeItem.dataset.color) {
+                        removeItemFromCartList = cart.indexOf(valueK.id);
                         cart.splice(removeItemFromCartList, 1);
                         UpdateLocalStorage(cart);
                     }
@@ -89,6 +91,7 @@ function DeletionOfItems(productList) {
         }
     }
 }
+
 
 // Extract list of selected products from local storage and if it is empty, it trigers an alert
 function GetProductListFromLocalStorage() {
@@ -117,7 +120,7 @@ function ModifyQuantity() {
     let inputChange = document.getElementsByClassName("itemQuantity");
     let parentOfInputChange = document.getElementsByClassName("cart__item");
     let stringQuantity = document.getElementsByClassName("quantityString");
-    // let totalQuantity = document.getElementById("totalQuantity");
+
 
     for (let a = 0; a < parentOfInputChange.length; a++) {
         for (let b = 0; b < cart.length; b++) {
@@ -129,11 +132,12 @@ function ModifyQuantity() {
                     let quantity = inputChange[a].value;
 
                     if (quantity <= 0 || quantity >= 101) {
-                        return false
+                        return false;
                     }
-                    cart[b].quantity = quantity
+                    cart[b].quantity = quantity;
                     stringQuantity[a].innerHTML = "Qté " + quantity;
                     UpdateLocalStorage(cart);
+
 
                     return;
                 });
@@ -143,23 +147,32 @@ function ModifyQuantity() {
     }
 }
 
+
+
 function CalculateTotal(productList) {
     let cart = GetProductListFromLocalStorage();
     let totalPrice = document.getElementById("totalPrice");
     let totalQuantity = document.getElementById("totalQuantity");
+    let sumPrice = 0;
+    let sumQuantity = 0;
 
-    for (let a = 0; a < cart.length; a++) {
-        for (let i = 0; i < productList.length; i++) {
+    for (let itemQuantity of cart) {
 
-            if (productList[i]._id === cart[a].id && productList[i].colors === cart[a].color) {
-                console.log("ok");
-                totalPrice.innerHTML = productList[i].price * cart[a].quantity
+        for (let price = 0; price < productList.length; price++) {
+
+            if (itemQuantity.id === productList[price]._id) {
+                sumPrice += productList[price].price * itemQuantity.quantity;
+                totalPrice.innerHTML = sumPrice;
             }
-
-            totalPrice.innerHTML = productList[i].price * cart[a].quantity
         }
+
+        sumQuantity += itemQuantity.quantity++;
+
+        totalQuantity.innerHTML = sumQuantity;
     }
+
 }
+
 
 
 // Listening on submit, condition to send data only if the check has been successfull
