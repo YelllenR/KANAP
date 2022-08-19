@@ -2,8 +2,16 @@
 
 // Class of produit
 FetchApiAndRenderElements('http://localhost:3000/api/products');
-
-//  Fetch the API
+/**
+ * @param {fetch} connextionToApi url to connect
+ * 
+ * @return {Promise} 
+ * 1. response.json  
+ * 2. Render data on html
+ * 3. Delete items and update localstorage if the user clicks on the delete button 
+ * 4. Retrieve and prepare data before sending to the API 
+ * 5. Sending data to API.
+ */
 function FetchApiAndRenderElements(connextionToApi) {
     fetch(connextionToApi)
         .then(response => response.json())
@@ -13,8 +21,14 @@ function FetchApiAndRenderElements(connextionToApi) {
         .then(() => SendingFormData())
 }
 
-
-// Render the cart list with extra elements on Html
+/** Render the cart list on Html
+ * @param {productList} productList - products from API
+ * 
+ * @return {HTMLDataElement} Get the data in localStorage.
+ * 1. loops through localStorage
+ * 2. loops through products from API 
+ * 3. If id in localStorage matches the id of Api, then it render the selected products in html
+ */
 function RenderSelectedItemsOnHtml(productList) {
     const sectionItemToRender = document.getElementById("cart__items");
     let cart = GetProductListFromLocalStorage();
@@ -65,7 +79,16 @@ function RenderSelectedItemsOnHtml(productList) {
     CalculateTotal(productList)
 }
 
-// Delete selected items on cart and updating the localStorage (calling the function UpdateLocalStorage(cart))
+
+/** Delete selected items on cart and updating the localStorage
+ * @param {none} none
+ * 
+ * @return {HTMLCollection} updatesLocalStorage & updatesHTMLDataElement 
+ * 1. get the html elements
+ * 2. the variable cart contain the localStorage 
+ * 3. Loops through the delete button and add an event listener and remove the selected item 
+ * 4. Loops through the localStorage to update accordingly - calling the function UpdateLocalStorage(cart)
+ */
 function DeletionOfItems(productList) {
     let deleteItem = document.getElementsByClassName("deleteItem");
     let productToDelete = document.getElementsByClassName("cart__item");
@@ -93,7 +116,14 @@ function DeletionOfItems(productList) {
 }
 
 
-// Extract list of selected products from local storage and if it is empty, it trigers an alert
+/** Extract list of selected products from local storage and if it is empty
+ * @param {none} none 
+ * 
+ * @return {listProducts} listProducts 
+ * 1. Get the localStorage 
+ * 2. Check if null and return an empty array 
+ * 3. Parsing the data of localStorage
+ */
 function GetProductListFromLocalStorage() {
     let localStorageList = localStorage.getItem("ListSelectedProduct");
     if (localStorageList == null) {
@@ -107,14 +137,29 @@ function GetProductListFromLocalStorage() {
 }
 
 
-// Updating localStorage according to modifications done by the user (deletion of products, changing quantities)
+/** Updating localStorage according to modifications done by the user (deletion of products, changing quantities)
+ * @param {cart} cart 
+ * 
+ * @return {setLocalStorage} setLocalStorage
+ * 1. Sets the localStorage and stringifying it
+ */
 function UpdateLocalStorage(cart) {
     localStorage.setItem("ListSelectedProduct", JSON.stringify(cart));
 }
 
 
 
-// increment or decrement total quantity of products according to the choosen quantity
+/** Increment or decrement total quantity of products according to the choosen quantity
+ * @param {none} none
+ * 
+ * @return {valueOfUpdate} Values of updated quantities
+ * 1. Loops through parent element
+ * 2. loops through cart (localstorage)
+ * 3. Conditionnal statement to check if the html data id & color (from html element rendered in the above code) matches the id & color of localStorage
+ * 4. Event Listener on input value
+ * 5. Render the obtained values on html 
+ * 6. Calling the function updateLocalStorage
+ */
 function ModifyQuantity() {
     let cart = GetProductListFromLocalStorage();
     let inputChange = document.getElementsByClassName("itemQuantity");
@@ -148,7 +193,17 @@ function ModifyQuantity() {
 }
 
 
-
+/** Calculates total quantity and total price according to localStorage
+ * @param {productList} productList
+ * 
+ * @return {valueOfUpdate} Values of updated quantities
+ * 1. Loops through parent element
+ * 2. loops through cart (localstorage)
+ * 3. Conditionnal statement to check if the html data id & color (from html element rendered in the above code) matches the id & color of localStorage
+ * 4. Event Listener on input value
+ * 5. Render the obtained values on html 
+ * 6. Calling the function updateLocalStorage
+ */
 function CalculateTotal(productList) {
     let cart = GetProductListFromLocalStorage();
     let totalPrice = document.getElementById("totalPrice");
@@ -172,8 +227,6 @@ function CalculateTotal(productList) {
     }
 
 }
-
-
 
 // Listening on submit, condition to send data only if the check has been successfull
 function RetrievingDataOnEventListener() {
