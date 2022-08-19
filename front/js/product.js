@@ -8,11 +8,20 @@ const colorsSelection = document.getElementById("colors");
 // getting the id of the product with window lcoation search
 const keySearchValues = new URLSearchParams(window.location.search);
 
-// Fetch - Calling the API adresse with the id route (also using the file Product.js in the models file)
+// Fetch - Calling the API adresse with the id of the product
 FetchAndRenderProductsApi('http://localhost:3000/api/products/' + keySearchValues.get("id"));
 
 
 // fetch, get response in json, convert it into an object, rendering the informations in html and checking the values before redirection
+/**
+ * @param {getProductsUrl} getProductsUrl url to connect
+ * 
+ * @return {Promise} 
+ * 1. response.json  
+ * 2. Object product
+ * 3. Render html elements
+ * 4. Event on cart button
+ */
 function FetchAndRenderProductsApi(getProductsUrl) {
     fetch(getProductsUrl)
         .then(response => response.json())
@@ -21,7 +30,7 @@ function FetchAndRenderProductsApi(getProductsUrl) {
         .then(() => AddEventListenerToCartButton())
 }
 
-// assigning product as a new product object
+// Assigning product as a new product object
 function TypeProduct(product) {
     return Object.assign(new Product, product);
 }
@@ -51,7 +60,11 @@ function AddEventListenerToCartButton() {
     addingToCart.addEventListener("click", OnClickCardButton)
 }
 
-// --------------- Below - functions that are called only if button is clicked -----------------------------------
+
+
+
+
+// --------------- Below are functions that are called only if button is clicked -----------------------------------
 
 // function that checks if values are Ok and then save them to localstorage. 
 function OnClickCardButton(event) {
@@ -104,17 +117,16 @@ function CheckColors() {
     return true;
 }
 
-//  Get localstorage, checking if localstorage has data and if not setting them in a list.  
+//  Get localstorage, checking if localstorage has data and if not setting them in an array.  
 function SaveProductToLocalStorage() {
 
-    // Get local storage, store the data to a new variable. 
+    // new variable that call the function GetProductToLocalStorage();
     let oldLocalStorage = GetProductToLocalStorage();
 
     const inputQuantities = document.getElementById("quantity").value;
     const selectColor = document.getElementById("colors").value;
 
-    // Create new object (from model ProducInCart) that holds the values selected
-
+    // Create new object (from model ProducInCart) that holds the selected values 
     let productCart = new ProducInCart(keySearchValues.get("id"), selectColor, inputQuantities);
 
     let newListProductInBasket = [];
@@ -143,7 +155,7 @@ function SaveProductToLocalStorage() {
 }
 
 
-// Get local storage for product selected in page.
+// Get local storage for product selected .
 function GetProductToLocalStorage() {
     let storage = localStorage.getItem("ListSelectedProduct");
     let storedList = JSON.parse(storage);
