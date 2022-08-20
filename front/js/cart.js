@@ -289,6 +289,7 @@ const submitBtn = document.getElementById("order");
 function SubmitOrder() {
     let formAction = document.getElementById("formPurchase");
     submitBtn.onclick = (e => {
+
         e.preventDefault();
         SendingFormData();
         document.getElementById("formPurchase").reset();
@@ -296,6 +297,8 @@ function SubmitOrder() {
     });
 }
 
+
+}
 
 /** Function to send the data
 * 
@@ -447,6 +450,7 @@ function GetFormDataInputs() {
 
 
 
+
 /** Loops through localStorage to get only the ProductId, 
  * variable orderInformations stores the requested results and converts it into Json.
  * 
@@ -461,6 +465,8 @@ function FormatingRequestForPost(contactOnly) {
     for (let i = 0; i < productsId.length; i++) {
         products.push(productsId[i].id);
     }
+
+
 
     let orderInformations = {
         contact: GetFormDataInputs(),
