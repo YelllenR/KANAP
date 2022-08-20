@@ -3,9 +3,8 @@
 // Class of produit
 FetchApiAndRenderElements('http://localhost:3000/api/products');
 /**
- * @param {fetch} connextionToApi url to connect
- * 
- * @return {Promise} 
+ * @param {connextionToApi} connextionToApi-url to connect
+
  * 1. response.json  
  * 2. Render data on html
  * 3. Delete items and update localstorage if the user clicks on the delete button 
@@ -16,9 +15,10 @@ function FetchApiAndRenderElements(connextionToApi) {
     fetch(connextionToApi)
         .then(response => response.json())
         .then(jsonResponse => RenderSelectedItemsOnHtml(jsonResponse))
-        .then(() => DeletionOfItems())
-        .then((urlConfirmWithId) => RetrievingDataOnEventListener(urlConfirmWithId))
-        .then(() => SendingFormData())
+        .then((productList) => DeletionOfItems(productList))
+        .then(() => RetrievingDataOnEventListener())
+        .then(() => SubmitOrder())
+
 }
 
 /** Render the cart list on Html
@@ -80,10 +80,10 @@ function RenderSelectedItemsOnHtml(productList) {
 }
 
 
+
 /** Delete selected items on cart and updating the localStorage
- * @param {none} none
+ * @param {productList} productList
  * 
- * @return {HTMLCollection} updatesLocalStorage & updatesHTMLDataElement 
  * 1. get the html elements
  * 2. the variable cart contain the localStorage 
  * 3. Loops through the delete button and add an event listener and remove the selected item 
@@ -117,8 +117,6 @@ function DeletionOfItems(productList) {
 
 
 /** Extract list of selected products from local storage and if it is empty
- * @param {none} none 
- * 
  * @return {listProducts} listProducts 
  * 1. Get the localStorage 
  * 2. Check if null and return an empty array 
@@ -128,14 +126,36 @@ function GetProductListFromLocalStorage() {
     let localStorageList = localStorage.getItem("ListSelectedProduct");
     if (localStorageList == null) {
         submitBtn.style.backgroundColor = 'red';
-        alert("Aucun article sélectionné n'a été trouvé");
+        alert("Aucun article n'a été trouvé");
 
         return [];
     }
     let listProducts = JSON.parse(localStorageList);
+
     return listProducts;
 }
 
+/** 
+ * Check if storage is empty or not
+ * 
+ * @return {boolean} Is empty or not
+*/
+function IsStorageEmpty() {
+    let productInStorage = GetProductListFromLocalStorage();
+    console.log(productInStorage.length + "item from local storage");
+
+    let hasValueInStorage = true;
+    submitBtn.disabled = false;
+
+    if (productInStorage.length === 0) {
+        console.log("No products found in local storage");
+        alert("Votre panier est vide");
+        hasValueInStorage = false;
+        submitBtn.disabled = true;
+    }
+
+    return hasValueInStorage;
+}
 
 /** Updating localStorage according to modifications done by the user (deletion of products, changing quantities)
  * @param {cart} cart 
@@ -228,122 +248,73 @@ function CalculateTotal(productList) {
 
 }
 
-// Listening on submit, condition to send data only if the check has been successfull
+
+
+/** Retriving and sending data
+ */
 function RetrievingDataOnEventListener() {
+    if (IsStorageEmpty()) {
+        ListenOnChangeEvent();
+    }
+}
+
+
+/** Loops through localStorage to get only the ProductId, 
+ * variable orderInformations stores the requested results and converts it into Json.
+ * 
+ * @return {boolean} checks if inputs are valid
+*/
+function ListenOnChangeEvent() {
     document.querySelector("form").setAttribute("id", "formPurchase");
     GetFormById();
-    ChangeFormEvent()
-}
+    CheckingOfInputsInForm();
 
-
-function ChangeFormEvent() {
     form.addEventListener("change", (event) => {
-        event.preventDefault()
-        if (CheckingOfInputsInForm()) {
-            SendingFormData();
-            return true;
-        }
+        CheckingOfInputsInForm();
+        event.preventDefault();
+        console.log("Arrived in change event ");
     });
+
 }
+
+
 
 const submitBtn = document.getElementById("order");
 
-// event handler on btn and redirect to confirmation page with id 
-function Redirect(dataOfOrderId) {
+/**  Event Handler onclick
+ * 1. Call the sendingFormData
+ * 2. Resets the form field
+ * 3. Sets the method to post
+*/
+function SubmitOrder() {
     let formAction = document.getElementById("formPurchase");
-    GetProductListFromLocalStorage();
-    CheckingOfInputsInForm();
     submitBtn.onclick = (e => {
         e.preventDefault();
+        SendingFormData();
+        document.getElementById("formPurchase").reset();
         formAction.setAttribute("method", "post");
-        window.location.href = SetIdInUrl(dataOfOrderId);
     });
 }
 
 
-// Checks all the inputs, calling this function in RetrievingDataOnEventListener()
-function CheckingOfInputsInForm() {
-    GetFormById();
-    GetIdErrorMessage();
-
-    const messageForEmptyFields = "Le champs ne peut être vide";
-    const regexErrorMessage = "Veuillez respecter la saisie des champs";
-
-    if (IsLettersInFirstNameTrue(firstName)) {
-        errorFirstName.innerHTML = "";
-
-
-    } else if (firstName.value === "") {
-        errorFirstName.innerHTML = messageForEmptyFields;
-        document.getElementById("order").disabled = true;
-
-    } else {
-        errorFirstName.innerHTML = regexErrorMessage;
-        document.getElementById("order").disabled = true;
-    }
-
-    if (IsLettersInLastNameTrue(lastName)) {
-        errorLastName.innerHTML = "";
-
-
-    } else if (lastName.value === "") {
-        errorLastName.innerHTML = messageForEmptyFields;
-        document.getElementById("order").disabled = true;
-
-    } else {
-        errorLastName.innerHTML = regexErrorMessage;
-        document.getElementById("order").disabled = true;
-    }
-
-    if (IsAddressTrue(address)) {
-        errorAddress.innerHTML = "";
-
-
-    } else if (address.value === "") {
-        document.getElementById("order").disabled = true;
-        errorAddress.innerHTML = messageForEmptyFields;
-
-    } else {
-        errorAddress.innerHTML = regexErrorMessage;
-        document.getElementById("order").disabled = true;
-    }
-
-    if (IsCityTrue(city)) {
-        errorCity.innerHTML = "";
-
-
-    } else if (city.value === "") {
-        errorCity.innerHTML = messageForEmptyFields;
-        document.getElementById("order").disabled = true;
-
-    } else {
-        errorCity.innerHTML = regexErrorMessage;
-        document.getElementById("order").disabled = true;
-
-    }
-
-    if (IsEmailTrue(email)) {
-        errorEmail.innerHTML = "";
-
-    } else if (email.value === "") {
-        errorEmail.innerHTML = messageForEmptyFields;
-        document.getElementById("order").disabled = true;;
-
-    } else {
-        errorEmail.innerHTML = regexErrorMessage;
-        document.getElementById("order").disabled = true;
-    }
-
-    return true;
+/** Function to send the data
+* 
+*/
+function SendingFormData() {
+    let request = BuildRequestPostToApi();
+    fetch(request)
+        .then(response => response.json())
+        .then((data) => StockInformationsOfInputFields(data))
+        .then((dataOfOrderId) => Redirect(dataOfOrderId))
 }
 
-
-
-// Function to send the data
-function SendingFormData() {
-    GetFormDataInputs();
-
-    let orderInformations = FormatingRequestForPost();
+/**  
+ * function to build request for SendingData function()
+ * @return {request} request 
+*/
+function BuildRequestPostToApi() {
+    let contact = GetFormDataInputs();
+    let orderInformations = FormatingRequestForPost(contact);
 
     let formHeader = new Headers();
     formHeader.append('Content-type', 'application/json');
@@ -356,12 +327,147 @@ function SendingFormData() {
         body: JSON.stringify(orderInformations)
     });
 
+    return request;
+}
 
-    fetch(request)
-        .then(response => response.json())
-        .then((data) => StockInformationsOfInputFields(data))
-        .then((dataOfOrderId) => Redirect(dataOfOrderId))
+/**  function to build request for SendingData function()
+ * @param {dataOfOrderId} dataOfOrderId
+ * 
+ * @return {URL} url of confirmation page with order id 
+*/
+function Redirect(dataOfOrderId) {
+    return window.location.href = SetIdInUrl(dataOfOrderId);
+}
 
+
+/** ___________________________________________________________________________________ */
+
+/** Checks all the inputs 
+ * @return {boolean} Is check valid?
+ * If statement on regex and render message
+ */
+function CheckingOfInputsInForm() {
+    GetFormById();
+    GetIdErrorMessage();
+    let validInputCheck = true;
+
+    const messageForEmptyFields = "Le champs ne peut être vide";
+    const regexErrorMessage = "Veuillez respecter la saisie des champs";
+
+    if (IsLettersInFirstNameTrue(firstName)) {
+        errorFirstName.innerHTML = "";
+
+
+    } else if (firstName.value === "") {
+        errorFirstName.innerHTML = messageForEmptyFields;
+        validInputCheck = false;
+
+    } else {
+        errorFirstName.innerHTML = regexErrorMessage;
+        validInputCheck = false;
+    }
+
+    if (IsLettersInLastNameTrue(lastName)) {
+        errorLastName.innerHTML = "";
+
+
+    } else if (lastName.value === "") {
+        errorLastName.innerHTML = messageForEmptyFields;
+        validInputCheck = false;
+
+    } else {
+        errorLastName.innerHTML = regexErrorMessage;
+        validInputCheck = false;
+    }
+
+    if (IsAddressTrue(address)) {
+        errorAddress.innerHTML = "";
+
+
+    } else if (address.value === "") {
+        errorAddress.innerHTML = messageForEmptyFields;
+        validInputCheck = false;
+
+    } else {
+        errorAddress.innerHTML = regexErrorMessage;
+        validInputCheck = false;
+    }
+
+    if (IsCityTrue(city)) {
+        errorCity.innerHTML = "";
+
+
+    } else if (city.value === "") {
+        errorCity.innerHTML = messageForEmptyFields;
+        validInputCheck = false;
+
+    } else {
+        errorCity.innerHTML = regexErrorMessage;
+        validInputCheck = false;
+    }
+
+    if (IsEmailTrue(email)) {
+        errorEmail.innerHTML = "";
+
+    } else if (email.value === "") {
+        errorEmail.innerHTML = messageForEmptyFields;
+        validInputCheck = false;
+
+    } else {
+        errorEmail.innerHTML = regexErrorMessage;
+        validInputCheck = false;
+    }
+
+    if (validInputCheck) {
+        document.getElementById("order").disabled = false;
+    } else {
+        document.getElementById("order").disabled = true;
+    }
+
+    return validInputCheck;
+}
+
+
+/** To get all the values of the form with formData
+ * 
+ * @return {contact} contact informations
+*/
+function GetFormDataInputs() {
+    GetFormById();
+
+    const formInputData = new FormData(form);
+    let contact = {};
+
+    for (let keysOfData of formInputData.keys()) {
+        contact[keysOfData] = formInputData.get(keysOfData);
+    }
+
+    return contact;
+}
+
+
+
+/** Loops through localStorage to get only the ProductId, 
+ * variable orderInformations stores the requested results and converts it into Json.
+ * 
+ * @param {contactOnly} contactOnly contact informations
+ * 
+ * @return {orderInformations} order informations (with contact)
+*/
+function FormatingRequestForPost(contactOnly) {
+    let productsId = GetProductListFromLocalStorage();
+    let products = [];
+
+    for (let i = 0; i < productsId.length; i++) {
+        products.push(productsId[i].id);
+    }
+
+    let orderInformations = {
+        contact: GetFormDataInputs(),
+        products: products
+    }
+    console.log(orderInformations)
+    return orderInformations;
 }
 
 
@@ -429,43 +535,6 @@ function IsEmailTrue(email) {
 
 
 
-
-// To get all the values of the form with formData
-function GetFormDataInputs() {
-    GetFormById();
-
-    const formInputData = new FormData(form);
-    let contact = {};
-
-    for (let keysOfData of formInputData.keys()) {
-        contact[keysOfData] = formInputData.get(keysOfData);
-
-    }
-
-    return contact;
-}
-
-
-
-// Loops through localStorage to get only the ProductId, 
-// variable orderInformations stores the requested results and converts it into Json.
-function FormatingRequestForPost() {
-    let productsId = GetProductListFromLocalStorage();
-    let products = [];
-
-    for (let i = 0; i < productsId.length; i++) {
-        products.push(productsId[i].id);
-    }
-
-    let orderInformations = {
-        contact: GetFormDataInputs(),
-        products: products
-    }
-
-    return orderInformations;
-}
-
-
 // Creates a new object that contains the information got from the response.
 // Leave contactInformations in object in case of future use
 function StockInformationsOfInputFields(data) {
@@ -475,17 +544,16 @@ function StockInformationsOfInputFields(data) {
     contactInformations = informationsData.contact;
 
     SetIdInUrl(dataOfOrderId);
-
     return dataOfOrderId;
 }
 
 function SetIdInUrl(dataOfOrderId) {
 
-    let urlConfirmWithId = new URL("http://127.0.0.1:5500/front/html/confirmation.html");
+    let urlConfirmWithId = new URL("http://127.0.0.1:5500/html/confirmation.html");
     urlConfirmWithId.searchParams.append("OrderId", dataOfOrderId);
-    urlConfirmWithId.toString();
+    let tostring = urlConfirmWithId.toString();
 
-    console.log(urlConfirmWithId);
+    console.log(tostring);
 
     return urlConfirmWithId;
 }
