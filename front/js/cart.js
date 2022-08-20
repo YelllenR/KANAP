@@ -201,12 +201,13 @@ function Redirect(dataOfOrderId) {
     GetProductListFromLocalStorage();
     CheckingOfInputsInForm();
     submitBtn.onclick = (e => {
+
         e.preventDefault();
         formAction.setAttribute("method", "post");
         window.location.href = SetIdInUrl(dataOfOrderId);
-    });
-}
+    })
 
+}
 
 // Checks all the inputs, calling this function in RetrievingDataOnEventListener()
 function CheckingOfInputsInForm() {
@@ -303,11 +304,16 @@ function SendingFormData() {
         body: JSON.stringify(orderInformations)
     });
 
+    try {
+        fetch(request)
+            .then(response => response.json())
+            .then((data) => StockInformationsOfInputFields(data))
+            .then((dataOfOrderId) => Redirect(dataOfOrderId))
+    }
+    catch (error) {
+        console.log(error)
+    }
 
-    fetch(request)
-        .then(response => response.json())
-        .then((data) => StockInformationsOfInputFields(data))
-        .then((dataOfOrderId) => Redirect(dataOfOrderId))
 
 }
 
@@ -428,7 +434,7 @@ function StockInformationsOfInputFields(data) {
 
 function SetIdInUrl(dataOfOrderId) {
 
-    let urlConfirmWithId = new URL("http://127.0.0.1:5500/front/html/confirmation.html");
+    let urlConfirmWithId = new URL("http://127.0.0.1:5500/html/confirmation.html");
     urlConfirmWithId.searchParams.append("OrderId", dataOfOrderId);
     urlConfirmWithId.toString();
 
