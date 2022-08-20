@@ -2,7 +2,6 @@
 /**
 * @param {getProductsUrl} getProductsUrl url to connect
 * 
-* @return {Promise} Promise; 
 * 1. response.json  
 * 2. Products from API 
 * 3. Render products in html
@@ -17,7 +16,13 @@ function FetchAndRenderProductsApi(getProductsUrl) {
 FetchAndRenderProductsApi('http://localhost:3000/api/products');
 
 
-// Getting List of product, to a new object from the model Product
+
+
+/**Getting List of product, to a new object from the model Product 
+* @param {products} products new object of products
+* 
+* @return {typeProductList} An array of products from API;
+*/
 function TypeProductList(products) {
 
     let typeProductList = [];
@@ -30,9 +35,9 @@ function TypeProductList(products) {
 
 
 /**Rendering elements in html with key
-* @param {productList} getProductsUrl url to connect
+* @param {productList} productList
 * 
-* @return {productList} productList; 
+* @return {productList} return self -
 * 1. Rendering the products  
 */
 function RenderProducts(productList) {

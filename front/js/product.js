@@ -5,18 +5,18 @@ const descriptionOfProduct = document.getElementById("description");
 const imageOfProduct = document.querySelector(".item__img");
 const colorsSelection = document.getElementById("colors");
 
-// getting the id of the product with window lcoation search
+
+/** variable that contains the window location search */
 const keySearchValues = new URLSearchParams(window.location.search);
 
-// Fetch - Calling the API adresse with the id of the product
+/** Fetch - Calling the API adresse with keySearchValues to get the id of the product*/
 FetchAndRenderProductsApi('http://localhost:3000/api/products/' + keySearchValues.get("id"));
 
 
 // fetch, get response in json, convert it into an object, rendering the informations in html and checking the values before redirection
 /**
  * @param {getProductsUrl} getProductsUrl url to connect
- * 
- * @return {Promise} 
+ *
  * 1. response.json  
  * 2. Object product
  * 3. Render html elements
@@ -30,13 +30,23 @@ function FetchAndRenderProductsApi(getProductsUrl) {
         .then(() => AddEventListenerToCartButton())
 }
 
-// Assigning product as a new product object
+/** 
+ * @param {product} product
+ * @return {product} product
+ * 
+ * Assigning product as a new product object
+ * */
 function TypeProduct(product) {
     return Object.assign(new Product, product);
 }
 
 
-// Setting the informations according to the ID of the product selected
+
+/** 
+* @param {product} product 
+*
+*Setting the informations according to the ID of the product selected
+*/
 function SetHtmlElements(product) {
     imageOfProduct.innerHTML += `<img src="${product.imageUrl}" 
                                 alt="${product.altTxt}">`;
@@ -54,19 +64,21 @@ function SetHtmlElements(product) {
     });
 }
 
-// Event Listener on addToCart button that calls the OnClickCardButton.
+
+/** Event Listener on addToCart button that calls the OnClickCardButton.*/
 function AddEventListenerToCartButton() {
     const addingToCart = document.getElementById("addToCart");
     addingToCart.addEventListener("click", OnClickCardButton)
 }
 
 
-
-
-
 // --------------- Below are functions that are called only if button is clicked -----------------------------------
 
-// function that checks if values are Ok and then save them to localstorage. 
+
+/** function that checks if values are Ok and then save them to localstorage. 
+ * @param {event} event
+ * 
+*/
 function OnClickCardButton(event) {
     event.preventDefault();
     if (CheckingValues()) {
@@ -74,7 +86,12 @@ function OnClickCardButton(event) {
     }
 }
 
-// Checking colors and quantity
+
+/** Checking colors and quantity
+ * If statement on quantity and color then returns true or false
+ * 
+ * @return {boolean}
+*/
 function CheckingValues() {
     if (CheckQuantities() == false) {
         return false;
@@ -85,7 +102,10 @@ function CheckingValues() {
     return true;
 }
 
-// Checking input values in quantities
+/** Checking input values in quantities
+ * 
+ * @return {boolean}
+*/
 function CheckQuantities() {
     const inputQuantities = document.getElementById("quantity").value;
 
@@ -107,7 +127,11 @@ function CheckQuantities() {
 }
 
 
-// Checking selected color
+
+/** Checking selected color
+ * 
+ * @return {boolean}
+*/
 function CheckColors() {
     const selectColor = document.getElementById("colors").value;
     if (selectColor.value === selectColor[0]) {
@@ -117,7 +141,8 @@ function CheckColors() {
     return true;
 }
 
-//  Get localstorage, checking if localstorage has data and if not setting them in an array.  
+
+/** Get localstorage, checking if localstorage has data and if not setting them in an array.*/
 function SaveProductToLocalStorage() {
 
     // new variable that call the function GetProductToLocalStorage();
@@ -133,10 +158,10 @@ function SaveProductToLocalStorage() {
 
     if (oldLocalStorage != null) {
 
-        newListProductInBasket = oldLocalStorage; 
-  
-        for (let i = 0; i < newListProductInBasket.length; i++){
-            if (newListProductInBasket[i].id === productCart.id && newListProductInBasket[i].color === productCart.color){
+        newListProductInBasket = oldLocalStorage;
+
+        for (let i = 0; i < newListProductInBasket.length; i++) {
+            if (newListProductInBasket[i].id === productCart.id && newListProductInBasket[i].color === productCart.color) {
                 newListProductInBasket[i].quantity = parseInt(newListProductInBasket[i].quantity) + parseInt(productCart.quantity);
                 productCart = null;
                 break;
@@ -144,18 +169,21 @@ function SaveProductToLocalStorage() {
         }
     }
 
-    if(productCart != null){
+    if (productCart != null) {
         newListProductInBasket.push(productCart);
     }
 
 
     // Save and replace old local storage with new list.
     localStorage.setItem("ListSelectedProduct", JSON.stringify(newListProductInBasket));
-    console.log(newListProductInBasket)
+
 }
 
 
-// Get local storage for product selected .
+/** Get local storage for product selected 
+ * @return {storedList} storedList
+ * 
+*/
 function GetProductToLocalStorage() {
     let storage = localStorage.getItem("ListSelectedProduct");
     let storedList = JSON.parse(storage);
