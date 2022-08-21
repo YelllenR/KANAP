@@ -37,7 +37,8 @@ function FetchAndRenderProductsApi(getProductsUrl) {
  * Assigning product as a new product object
  * */
 function TypeProduct(product) {
-    return Object.assign(new Product, product);
+    
+   return Object.assign(new Product, product);
 }
 
 
@@ -107,22 +108,26 @@ function CheckingValues() {
  * @return {boolean}
 */
 function CheckQuantities() {
-    const inputQuantities = document.getElementById("quantity").value;
+    let inputQuantities = document.getElementById("quantity");
 
-    if (inputQuantities == 0) {
+    if (inputQuantities.value == 0) {
         alert("Veuillez indiquer une quantité.");
+        inputQuantities.value = 1;
         return false;
     }
 
-    if (inputQuantities < 0) {
+    if (inputQuantities.value < 0) {
         alert("Veuillez indiquer une quantité supérieure à 0.");
+        inputQuantities.value = 1;
         return false;
     }
 
-    if (inputQuantities > 100) {
+    if (inputQuantities.value > 100) {
         alert("Veuillez indiquer une quantité inférieure à 100.");
+        inputQuantities.value = 100;
         return false;
     }
+
     return true;
 }
 

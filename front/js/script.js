@@ -30,6 +30,7 @@ function TypeProductList(products) {
         let result = Object.assign(new Product, element);
         typeProductList.push(result);
     });
+
     return typeProductList;
 }
 
@@ -55,8 +56,8 @@ function RenderProducts(productList) {
         </a>`
     });
 
-
     articlesItems.innerHTML = imgsDom;
+
     return productList;
 }
 

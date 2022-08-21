@@ -34,7 +34,7 @@ function RenderSelectedItemsOnHtml(productList) {
     const sectionItemToRender = document.getElementById("cart__items");
     let cart = GetProductListFromLocalStorage();
     let tagToRender = "";
-
+    
     for (let itemInLocalStorage of cart) {
 
         for (let j = 0; j < productList.length; j++) {
@@ -77,9 +77,88 @@ function RenderSelectedItemsOnHtml(productList) {
         }
     }
     ModifyQuantity();
-    CalculateTotal(productList)
+    CalculateTotal(productList); 
 }
 
+
+/** Increment or decrement total quantity of products according to the choosen quantity
+ * 
+ * 1. Loops through parent element
+ * 2. loops through cart (localstorage)
+ * 3. Conditionnal statement to check if the html data id & color (from html element rendered in the above code) matches the id & color of localStorage
+ * 4. Event Listener on input value
+ * 5. Render the obtained values on html 
+ * 6. Calling the function updateLocalStorage
+ */
+ function ModifyQuantity() {
+    let cart = GetProductListFromLocalStorage();
+    let inputChange = document.getElementsByClassName("itemQuantity");
+    let parentOfInputChange = document.getElementsByClassName("cart__item");
+    let stringQuantity = document.getElementsByClassName("quantityString");
+    
+
+    for (let a = 0; a < parentOfInputChange.length; a++) {
+        for (let b = 0; b < cart.length; b++) {
+            if (cart[b].id === parentOfInputChange[a].dataset.id &&
+                cart[b].color === parentOfInputChange[a].dataset.color) {
+
+                inputChange[a].addEventListener("change", function (changed) {
+                    changed.preventDefault()
+                    let quantity = inputChange[a].value;
+
+                    if (quantity <= 0) {
+                        alert("Merci d'indiquer une quantité supérieur à zéro");
+                        quantity.value = 1;
+                        return false;
+                    }
+                    if(quantity >= 101){
+                        alert("Impossible de commander plus de 100 pour ce même produit avec la même couleur!");
+                        quantity.value = 100;
+                        return false;
+                    }
+                    cart[b].quantity = quantity;
+                    stringQuantity[a].innerHTML = "Qté " + quantity;
+                    UpdateLocalStorage(cart);
+
+                    return;
+                });
+                break;
+            }
+        }
+    }
+}
+
+
+/** Calculates total quantity and total price according to localStorage
+ * @param {productList} productList
+ * 
+ * 1. Loops through parent element
+ * 2. loops through cart (localstorage)
+ * 3. Conditionnal statement to check if the html data id & color (from html element rendered in the above code) matches the id & color of localStorage
+ * 4. Event Listener on input value
+ * 5. Render the obtained values on html 
+ * 6. Calling the function updateLocalStorage
+ */
+function CalculateTotal(productList) {
+    let cart = GetProductListFromLocalStorage();
+    let totalPrice = document.getElementById("totalPrice");
+    let totalQuantity = document.getElementById("totalQuantity");
+    let sumPrice = 0;
+    let sumQuantity = 0;
+
+    for (let itemQuantity of cart) {
+
+        for (let price = 0; price < productList.length; price++) {
+
+            if (itemQuantity.id === productList[price]._id) {
+                sumPrice += productList[price].price * itemQuantity.quantity;
+                totalPrice.innerHTML = sumPrice;
+            }
+        }
+        sumQuantity += itemQuantity.quantity++;
+        totalQuantity.innerHTML = sumQuantity;
+    }
+}
 
 
 /** Delete selected items on cart and updating the localStorage
@@ -136,15 +215,32 @@ function GetProductListFromLocalStorage() {
     return listProducts;
 }
 
+/** Updating localStorage according to modifications done by the user (deletion of products, changing quantities)
+ * @param {cart} cart 
+ * 
+ * 1. Sets the localStorage and stringifying it
+ */
+ function UpdateLocalStorage(cart) {
+    localStorage.setItem("ListSelectedProduct", JSON.stringify(cart));
+}
+
+
+
+/** checks if localStorage is empty or not and the calling the ListenOnChangeEvent
+ */
+ function RetrievingDataOnEventListener() {
+    if (IsStorageNotEmpty()) {
+        ListenOnChangeEvent();
+    }
+}
 
 /** 
  * Check if storage is empty or not
  * 
  * @return {boolean} Is empty or not
 */
-function IsStorageEmpty() {
+function IsStorageNotEmpty() {
     let productInStorage = GetProductListFromLocalStorage();
-    console.log(productInStorage.length + "item from local storage");
 
     let hasValueInStorage = true;
     submitBtn.disabled = false;
@@ -159,99 +255,6 @@ function IsStorageEmpty() {
     return hasValueInStorage;
 }
 
-/** Updating localStorage according to modifications done by the user (deletion of products, changing quantities)
- * @param {cart} cart 
- * 
- * 1. Sets the localStorage and stringifying it
- */
-function UpdateLocalStorage(cart) {
-    localStorage.setItem("ListSelectedProduct", JSON.stringify(cart));
-}
-
-
-
-/** Increment or decrement total quantity of products according to the choosen quantity
- * 
- * 1. Loops through parent element
- * 2. loops through cart (localstorage)
- * 3. Conditionnal statement to check if the html data id & color (from html element rendered in the above code) matches the id & color of localStorage
- * 4. Event Listener on input value
- * 5. Render the obtained values on html 
- * 6. Calling the function updateLocalStorage
- */
-function ModifyQuantity() {
-    let cart = GetProductListFromLocalStorage();
-    let inputChange = document.getElementsByClassName("itemQuantity");
-    let parentOfInputChange = document.getElementsByClassName("cart__item");
-    let stringQuantity = document.getElementsByClassName("quantityString");
-
-
-    for (let a = 0; a < parentOfInputChange.length; a++) {
-        for (let b = 0; b < cart.length; b++) {
-            if (cart[b].id === parentOfInputChange[a].dataset.id &&
-                cart[b].color === parentOfInputChange[a].dataset.color) {
-
-                inputChange[a].addEventListener("change", function (changed) {
-                    changed.preventDefault()
-                    let quantity = inputChange[a].value;
-
-                    if (quantity <= 0 || quantity >= 101) {
-                        return false;
-                    }
-                    cart[b].quantity = quantity;
-                    stringQuantity[a].innerHTML = "Qté " + quantity;
-                    UpdateLocalStorage(cart);
-
-
-                    return;
-                });
-                break;
-            }
-        }
-    }
-}
-
-
-/** Calculates total quantity and total price according to localStorage
- * @param {productList} productList
- * 
- * 1. Loops through parent element
- * 2. loops through cart (localstorage)
- * 3. Conditionnal statement to check if the html data id & color (from html element rendered in the above code) matches the id & color of localStorage
- * 4. Event Listener on input value
- * 5. Render the obtained values on html 
- * 6. Calling the function updateLocalStorage
- */
-function CalculateTotal(productList) {
-    let cart = GetProductListFromLocalStorage();
-    let totalPrice = document.getElementById("totalPrice");
-    let totalQuantity = document.getElementById("totalQuantity");
-    let sumPrice = 0;
-    let sumQuantity = 0;
-
-    for (let itemQuantity of cart) {
-
-        for (let price = 0; price < productList.length; price++) {
-
-            if (itemQuantity.id === productList[price]._id) {
-                sumPrice += productList[price].price * itemQuantity.quantity;
-                totalPrice.innerHTML = sumPrice;
-            }
-        }
-        sumQuantity += itemQuantity.quantity++;
-        totalQuantity.innerHTML = sumQuantity;
-    }
-}
-
-
-
-/** checks if localStorage is empty or not and the calling the ListenOnChangeEvent
- */
-function RetrievingDataOnEventListener() {
-    if (IsStorageEmpty()) {
-        ListenOnChangeEvent();
-    }
-}
 
 
 /** Loops through localStorage to get only the ProductId, 
@@ -266,9 +269,188 @@ function ListenOnChangeEvent() {
     form.addEventListener("change", (event) => {
         CheckingOfInputsInForm();
         event.preventDefault();
-        console.log("Arrived in change event ");
     });
 }
+
+
+
+/** Checks all the inputs with and without regex
+ * @return {boolean} Is check valid? 
+ * If statement on regex and render message
+ */
+ function CheckingOfInputsInForm() {
+    GetFormById();
+    GetIdErrorMessage();
+    let validInputCheck = true;
+
+    const messageForEmptyFields = "Le champs ne peut être vide";
+    const regexErrorMessage = "Veuillez respecter la saisie des champs";
+
+    if (IsLettersInFirstNameTrue(firstName)) {
+        errorFirstName.innerHTML = "";
+
+
+    } else if (firstName.value === "") {
+        errorFirstName.innerHTML = messageForEmptyFields;
+        validInputCheck = false;
+
+    } else {
+        errorFirstName.innerHTML = regexErrorMessage;
+        validInputCheck = false;
+    }
+
+    if (IsLettersInLastNameTrue(lastName)) {
+        errorLastName.innerHTML = "";
+
+
+    } else if (lastName.value === "") {
+        errorLastName.innerHTML = messageForEmptyFields;
+        validInputCheck = false;
+
+    } else {
+        errorLastName.innerHTML = regexErrorMessage;
+        validInputCheck = false;
+    }
+
+    if (IsAddressTrue(address)) {
+        errorAddress.innerHTML = "";
+
+
+    } else if (address.value === "") {
+        errorAddress.innerHTML = messageForEmptyFields;
+        validInputCheck = false;
+
+    } else {
+        errorAddress.innerHTML = regexErrorMessage;
+        validInputCheck = false;
+    }
+
+    if (IsCityTrue(city)) {
+        errorCity.innerHTML = "";
+
+
+    } else if (city.value === "") {
+        errorCity.innerHTML = messageForEmptyFields;
+        validInputCheck = false;
+
+    } else {
+        errorCity.innerHTML = regexErrorMessage;
+        validInputCheck = false;
+    }
+
+    if (IsEmailTrue(email)) {
+        errorEmail.innerHTML = "";
+
+    } else if (email.value === "") {
+        errorEmail.innerHTML = messageForEmptyFields;
+        validInputCheck = false;
+
+    } else {
+        errorEmail.innerHTML = regexErrorMessage;
+        validInputCheck = false;
+    }
+
+    // If value is true then disable the order button
+    if (validInputCheck) {
+        document.getElementById("order").disabled = false;
+    } else {
+        document.getElementById("order").disabled = true;
+    }
+
+    return validInputCheck;
+}
+
+
+/**  function to build request for SendingData function()
+getting Id's of form fields and removing required in html
+*/
+function GetFormById() {
+    const idTag = (id) => document.getElementById(id);
+
+    form = idTag("formPurchase"),
+        firstName = idTag("firstName"),
+        lastName = idTag("lastName"),
+        address = idTag("address"),
+        city = idTag("city"),
+        email = idTag("email");
+
+    firstName.required = false;
+    lastName.required = false;
+    address.required = false;
+    city.required = false;
+    email.required = false;
+
+}
+
+
+/** Function to get error tag IDs*/
+
+function GetIdErrorMessage() {
+    let error = (errorMessage) => document.getElementById(errorMessage);
+    errorLastName = error("lastNameErrorMsg"),
+        errorFirstName = error("firstNameErrorMsg"),
+        errorEmail = error("emailErrorMsg"),
+        errorAddress = error("addressErrorMsg"),
+        errorCity = error("cityErrorMsg");
+}
+
+
+/** Test on regex Email
+ * @param {firstName}
+ * 
+ * @return {boolean} Is email valid then removes extra spaces
+ */
+function IsLettersInFirstNameTrue(firstName) {
+    let lettersInRegexFirstName = new RegExp("^[a-zA-Z][A-zÀ-ú]{0,40}$", "g");
+
+    return lettersInRegexFirstName.test(firstName.value.trim(''));
+}
+
+/** Test on regex Email
+ * @param {lastName}
+ * 
+ * @return {boolean} Is email valid then removes extra spaces
+ */
+function IsLettersInLastNameTrue(lastName) {
+    let letterInRegexLastName = new RegExp("^[a-zA-Z][A-zÀ-ú]+$", "g");
+
+    return letterInRegexLastName.test(lastName.value.trim(''));
+}
+
+/** Test on regex Email
+ * @param {address}
+ * 
+ * @return {boolean} Is email valid then removes extra spaces
+ */
+function IsAddressTrue(address) {
+    let addressRegex = new RegExp("d{0,4} +[a-zA-Z][A-zÀ-ú]{1,5} ?D?$", "g");
+
+    return addressRegex.test(address.value.trim(''))
+}
+
+/** Test on regex Email
+ * @param {city}
+ * 
+ * @return {boolean} Is email valid then removes extra spaces
+ */
+function IsCityTrue(city) {
+    let cityRegex = new RegExp("[a-zA-Z-][a-zA-Z]{1,5} ?[0-9]{0,5} ?$", "g");
+
+    return cityRegex.test(city.value.trim(''));
+}
+
+
+/** Test on regex Email
+ * @param {email}
+ * 
+ * @return {boolean} Is email valid then removes extra spaces
+ */
+function IsEmailTrue(email) {
+    let emailRegex = new RegExp("^[a-zA-Z0-9.-_]+[@]{1}[a-zA-Z0-9.-_]+[.]{1}[a-z]{2,10}$", "g");
+
+    return emailRegex.test(email.value.trim(''));
+}
+
 
 
 const submitBtn = document.getElementById("order");
@@ -393,7 +575,7 @@ function StockInformationsOfInputFields(data) {
  * 
 */
 function SetIdInUrl(dataOfOrderId) {
-    let urlConfirmWithId = new URL("http://127.0.0.1:5500/html/confirmation.html");
+    let urlConfirmWithId = new URL("http://127.0.0.1:5500/front/html/confirmation.html");
     urlConfirmWithId.searchParams.append("OrderId", dataOfOrderId);
     let tostring = urlConfirmWithId.toString();
 
@@ -413,184 +595,4 @@ function Redirect(dataOfOrderId) {
 
 
 
-
-/** ___________________________________________________________________________________ */
-
-/**  function to build request for SendingData function()
-getting Id's of form fields and removing required in html
-*/
-function GetFormById() {
-    const idTag = (id) => document.getElementById(id);
-
-    form = idTag("formPurchase"),
-        firstName = idTag("firstName"),
-        lastName = idTag("lastName"),
-        address = idTag("address"),
-        city = idTag("city"),
-        email = idTag("email");
-
-    firstName.required = false;
-    lastName.required = false;
-    address.required = false;
-    city.required = false;
-    email.required = false;
-
-}
-
-
-/** Function to get error tag IDs*/
-
-function GetIdErrorMessage() {
-    let error = (errorMessage) => document.getElementById(errorMessage);
-    errorLastName = error("lastNameErrorMsg"),
-        errorFirstName = error("firstNameErrorMsg"),
-        errorEmail = error("emailErrorMsg"),
-        errorAddress = error("addressErrorMsg"),
-        errorCity = error("cityErrorMsg");
-}
-
-
-/** Test on regex Email
- * @param {firstName}
- * 
- * @return {boolean} Is email valid then removes extra spaces
- */
-function IsLettersInFirstNameTrue(firstName) {
-    let lettersInRegexFirstName = new RegExp("^[a-zA-Z][A-zÀ-ú]{0,40}$", "g");
-
-    return lettersInRegexFirstName.test(firstName.value.trim(''));
-}
-
-/** Test on regex Email
- * @param {lastName}
- * 
- * @return {boolean} Is email valid then removes extra spaces
- */
-function IsLettersInLastNameTrue(lastName) {
-    let letterInRegexLastName = new RegExp("^[a-zA-Z][A-zÀ-ú]+$", "g");
-
-    return letterInRegexLastName.test(lastName.value.trim(''));
-}
-
-/** Test on regex Email
- * @param {address}
- * 
- * @return {boolean} Is email valid then removes extra spaces
- */
-function IsAddressTrue(address) {
-    let addressRegex = new RegExp("d{0,4} +[a-zA-Z][A-zÀ-ú]{1,5} ?D?$", "g");
-
-    return addressRegex.test(address.value.trim(''))
-}
-
-/** Test on regex Email
- * @param {city}
- * 
- * @return {boolean} Is email valid then removes extra spaces
- */
-function IsCityTrue(city) {
-    let cityRegex = new RegExp("[a-zA-Z-][a-zA-Z]{1,5} ?[0-9]{0,5} ?$", "g");
-
-    return cityRegex.test(city.value.trim(''));
-}
-
-
-/** Test on regex Email
- * @param {email}
- * 
- * @return {boolean} Is email valid then removes extra spaces
- */
-function IsEmailTrue(email) {
-    let emailRegex = new RegExp("^[a-zA-Z0-9.-_]+[@]{1}[a-zA-Z0-9.-_]+[.]{1}[a-z]{2,10}$", "g");
-
-    return emailRegex.test(email.value.trim(''));
-}
-
-
-
-/** Checks all the inputs with and without regex
- * @return {boolean} Is check valid? 
- * If statement on regex and render message
- */
-function CheckingOfInputsInForm() {
-    GetFormById();
-    GetIdErrorMessage();
-    let validInputCheck = true;
-
-    const messageForEmptyFields = "Le champs ne peut être vide";
-    const regexErrorMessage = "Veuillez respecter la saisie des champs";
-
-    if (IsLettersInFirstNameTrue(firstName)) {
-        errorFirstName.innerHTML = "";
-
-
-    } else if (firstName.value === "") {
-        errorFirstName.innerHTML = messageForEmptyFields;
-        validInputCheck = false;
-
-    } else {
-        errorFirstName.innerHTML = regexErrorMessage;
-        validInputCheck = false;
-    }
-
-    if (IsLettersInLastNameTrue(lastName)) {
-        errorLastName.innerHTML = "";
-
-
-    } else if (lastName.value === "") {
-        errorLastName.innerHTML = messageForEmptyFields;
-        validInputCheck = false;
-
-    } else {
-        errorLastName.innerHTML = regexErrorMessage;
-        validInputCheck = false;
-    }
-
-    if (IsAddressTrue(address)) {
-        errorAddress.innerHTML = "";
-
-
-    } else if (address.value === "") {
-        errorAddress.innerHTML = messageForEmptyFields;
-        validInputCheck = false;
-
-    } else {
-        errorAddress.innerHTML = regexErrorMessage;
-        validInputCheck = false;
-    }
-
-    if (IsCityTrue(city)) {
-        errorCity.innerHTML = "";
-
-
-    } else if (city.value === "") {
-        errorCity.innerHTML = messageForEmptyFields;
-        validInputCheck = false;
-
-    } else {
-        errorCity.innerHTML = regexErrorMessage;
-        validInputCheck = false;
-    }
-
-    if (IsEmailTrue(email)) {
-        errorEmail.innerHTML = "";
-
-    } else if (email.value === "") {
-        errorEmail.innerHTML = messageForEmptyFields;
-        validInputCheck = false;
-
-    } else {
-        errorEmail.innerHTML = regexErrorMessage;
-        validInputCheck = false;
-    }
-
-    // If value is true then disable the order button
-    if (validInputCheck) {
-        document.getElementById("order").disabled = false;
-    } else {
-        document.getElementById("order").disabled = true;
-    }
-
-    return validInputCheck;
-}
 
